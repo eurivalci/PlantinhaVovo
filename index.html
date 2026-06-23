@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#2F6B3C">
+<title>Plantinha da Vovó — identifica e cuida das suas plantas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,ital,wght@9..144,0,500;9..144,0,600;9..144,0,700;9..144,1,500&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F7F3EA; --surface:#FFFFFF;
+    --green:#2F6B3C; --green-soft:#E7F0E6; --green-deep:#214E2A;
+    --amber:#C8870E; --amber-soft:#FBF0D8;
+    --coral:#D9594C; --coral-soft:#FBE6E2;
+    --rose:#B85C7A; --rose-soft:#F7E7EC;
+    --ink:#28271F; --ink-soft:#5C5A4F; --line:#E5E1D6;
+    --shadow:0 6px 22px rgba(33,78,42,.10);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0}
+  body{background:var(--bg);color:var(--ink);font-family:'Nunito',system-ui,sans-serif;
+    font-size:19px;line-height:1.5;-webkit-font-smoothing:antialiased;
+    padding-bottom:env(safe-area-inset-bottom);min-height:100vh}
+  .wrap{max-width:600px;margin:0 auto;padding:18px 18px 40px}
+
+  .topbar{display:flex;align-items:center;gap:13px;padding:14px 6px 6px}
+  .logo{width:52px;height:52px;border-radius:18px;flex:none;
+    background:linear-gradient(135deg,#7fae5c,#2F6B3C);display:grid;place-items:center;
+    font-size:27px;box-shadow:var(--shadow)}
+  .topbar h1{font-family:'Fraunces',serif;font-weight:700;font-size:25px;margin:0;line-height:1.05;color:var(--green-deep)}
+  .topbar p{margin:3px 0 0;font-size:14.5px;color:var(--ink-soft)}
+
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:22px;
+    box-shadow:var(--shadow);padding:22px;margin-top:18px}
+
+  .hero h2{font-family:'Fraunces',serif;font-weight:600;font-size:27px;margin:0 0 6px;color:var(--green-deep);line-height:1.15}
+  .hero p{margin:0 0 4px;font-size:18px;color:var(--ink-soft)}
+  .leaf-ill{font-size:64px;text-align:center;margin:6px 0 10px;filter:drop-shadow(0 6px 10px rgba(33,78,42,.18))}
+
+  .btn{width:100%;border:none;border-radius:18px;font-family:'Nunito',sans-serif;font-weight:800;
+    font-size:21px;padding:20px 18px;cursor:pointer;display:flex;align-items:center;justify-content:center;
+    gap:12px;min-height:66px;transition:transform .08s ease, filter .15s ease}
+  .btn:active{transform:scale(.98)}
+  .btn:focus-visible{outline:3px solid var(--green-deep);outline-offset:3px}
+  .btn-primary{background:var(--green);color:#fff;box-shadow:var(--shadow)}
+  .btn-primary:hover{filter:brightness(1.05)}
+  .btn-secondary{background:var(--green-soft);color:var(--green-deep);border:2px solid #cfe0cd;margin-top:14px}
+  .btn-ghost{background:transparent;color:var(--green-deep);border:2px solid var(--line);margin-top:14px;min-height:58px;font-size:19px}
+  .btn .ico{font-size:26px;line-height:1}
+  .hint{text-align:center;font-size:15px;color:var(--ink-soft);margin-top:16px;line-height:1.45}
+  input[type=file]{display:none}
+
+  .steps{display:flex;flex-direction:column;gap:12px}
+  .step{display:flex;align-items:center;gap:14px;font-size:17px;color:var(--ink-soft)}
+  .step .n{width:36px;height:36px;border-radius:50%;flex:none;background:var(--green-soft);
+    color:var(--green-deep);display:grid;place-items:center;font-weight:800;font-size:17px}
+
+  .preview-img{width:100%;border-radius:18px;display:block;max-height:340px;object-fit:cover;border:1px solid var(--line)}
+  .loading{text-align:center;padding:14px 6px 6px}
+  .spinner{width:70px;height:70px;margin:6px auto 16px;position:relative}
+  .spinner span{position:absolute;inset:0;border-radius:50%;border:6px solid var(--green-soft);
+    border-top-color:var(--green);animation:spin 1s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .loading h3{font-family:'Fraunces',serif;font-weight:600;font-size:22px;margin:0 0 4px;color:var(--green-deep)}
+  .loading p{margin:0;color:var(--ink-soft);font-size:17px;min-height:24px}
+
+  .res-head{display:flex;gap:16px;align-items:flex-start}
+  .res-thumb{width:88px;height:88px;border-radius:18px;object-fit:cover;flex:none;border:1px solid var(--line)}
+  .res-name{font-family:'Fraunces',serif;font-weight:700;font-size:26px;margin:0;color:var(--green-deep);line-height:1.1}
+  .res-sci{font-style:italic;color:var(--ink-soft);font-size:17px;margin:3px 0 0}
+  .res-fam{font-size:15px;color:var(--ink-soft);margin:6px 0 0}
+  .badge{display:inline-flex;align-items:center;gap:6px;font-size:14px;font-weight:700;padding:5px 12px;border-radius:999px;margin-top:10px}
+  .badge.alta{background:var(--green-soft);color:var(--green-deep)}
+  .badge.media{background:var(--amber-soft);color:var(--amber)}
+  .badge.baixa{background:var(--coral-soft);color:var(--coral)}
+
+  .btn-hear{margin-top:14px;background:var(--green-soft);color:var(--green-deep);border:2px solid #cfe0cd;
+    min-height:56px;font-size:18px}
+
+  .health{display:flex;align-items:center;gap:20px}
+  .gauge{position:relative;width:118px;height:118px;flex:none}
+  .gauge svg{transform:rotate(-90deg)}
+  .gauge .num{position:absolute;inset:0;display:grid;place-content:center;text-align:center}
+  .gauge .num b{font-family:'Fraunces',serif;font-size:32px;line-height:1;color:var(--ink)}
+  .gauge .num small{font-size:13px;color:var(--ink-soft);display:block;margin-top:2px}
+  .health-txt h3{font-family:'Fraunces',serif;font-weight:600;font-size:23px;margin:0 0 4px}
+  .health-txt p{margin:0;font-size:16px;color:var(--ink-soft)}
+
+  .sec-title{font-family:'Fraunces',serif;font-weight:600;font-size:21px;color:var(--green-deep);
+    margin:0 0 12px;display:flex;align-items:center;gap:10px}
+  .sec-title .e{font-size:24px}
+
+  .problem{display:flex;gap:12px;align-items:flex-start;padding:14px;border-radius:14px;
+    background:#FAF9F4;border:1px solid var(--line);margin-bottom:10px}
+  .problem .dot{width:14px;height:14px;border-radius:50%;flex:none;margin-top:5px}
+  .problem b{display:block;font-size:18px;margin-bottom:2px}
+  .problem p{margin:0;font-size:16px;color:var(--ink-soft)}
+  .dot.alta{background:var(--coral)} .dot.media{background:var(--amber)} .dot.baixa{background:var(--green)}
+
+  /* ONDE VIVE MELHOR */
+  .where-list{display:flex;flex-direction:column;gap:0}
+  .where{display:flex;gap:14px;align-items:flex-start;padding:13px 0;border-bottom:1px dashed var(--line)}
+  .where:last-child{border-bottom:none}
+  .where .we{font-size:26px;flex:none;width:34px;text-align:center}
+  .where b{display:block;font-size:14px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.4px;font-weight:800}
+  .where p{margin:1px 0 0;font-size:17px;line-height:1.4}
+  .diff{display:inline-block;font-size:14px;font-weight:800;padding:4px 12px;border-radius:999px;margin-top:2px}
+  .diff.facil{background:var(--green-soft);color:var(--green-deep)}
+  .diff.media{background:var(--amber-soft);color:var(--amber)}
+  .diff.exigente{background:var(--coral-soft);color:var(--coral)}
+
+  .care-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .care{background:var(--green-soft);border-radius:16px;padding:14px}
+  .care .ce{font-size:28px;line-height:1}
+  .care h4{margin:8px 0 4px;font-size:16px;font-weight:800;color:var(--green-deep)}
+  .care p{margin:0;font-size:15px;color:#3c5a3f;line-height:1.4}
+
+  .treat{display:flex;gap:12px;align-items:flex-start;padding:13px 0;border-bottom:1px dashed var(--line)}
+  .treat:last-child{border-bottom:none}
+  .treat .chk{width:30px;height:30px;border-radius:50%;flex:none;background:var(--coral-soft);
+    color:var(--coral);display:grid;place-items:center;font-size:17px;font-weight:800}
+  .treat p{margin:0;font-size:17px;line-height:1.4}
+
+  /* SABEDORIA DA VOVÓ — cartãozinho de receita */
+  .vovo-card{background:var(--rose-soft);border:2px dashed #e3b9c6;border-radius:20px;padding:20px}
+  .vovo-head{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+  .vovo-head .ve{font-size:30px}
+  .vovo-head h3{font-family:'Fraunces',serif;font-style:italic;font-weight:600;font-size:21px;margin:0;color:var(--rose)}
+  .vovo-card p{margin:0;font-size:18px;line-height:1.55;color:#5a3340}
+
+  .tip{background:var(--amber-soft);border-radius:16px;padding:16px 18px;font-size:17px;line-height:1.5;display:flex;gap:12px}
+  .tip .te{font-size:26px;flex:none}
+
+  /* PERGUNTE À VOVÓ */
+  .chat-log{display:flex;flex-direction:column;gap:10px;margin-bottom:14px}
+  .bubble{max-width:85%;padding:12px 15px;border-radius:16px;font-size:17px;line-height:1.45}
+  .bubble.user{align-self:flex-end;background:var(--green);color:#fff;border-bottom-right-radius:5px}
+  .bubble.vovo{align-self:flex-start;background:var(--green-soft);color:var(--green-deep);border-bottom-left-radius:5px}
+  .bubble.vovo.typing{color:var(--ink-soft);font-style:italic}
+  .chat-row{display:flex;gap:10px}
+  .chat-row input{flex:1;border:2px solid var(--line);border-radius:14px;padding:14px 16px;
+    font-family:'Nunito',sans-serif;font-size:17px;background:#fff;color:var(--ink)}
+  .chat-row input:focus{outline:none;border-color:var(--green)}
+  .chat-send{flex:none;width:58px;border:none;border-radius:14px;background:var(--green);color:#fff;
+    font-size:22px;cursor:pointer}
+  .chat-send:disabled{opacity:.5}
+  .suggest{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+  .chip{background:#fff;border:2px solid var(--line);border-radius:999px;padding:9px 14px;font-size:15px;
+    font-weight:700;color:var(--green-deep);cursor:pointer}
+  .chip:active{transform:scale(.97)}
+
+  .disclaimer{text-align:center;font-size:13.5px;color:var(--ink-soft);margin-top:18px;line-height:1.5;padding:0 6px}
+  .errbox{background:var(--coral-soft);border:1px solid #f0c4bd;border-radius:16px;padding:18px;color:#9c3a30;font-size:17px;line-height:1.5}
+
+  .hist-item{display:flex;gap:14px;align-items:center;padding:12px;border-radius:14px;
+    border:1px solid var(--line);background:#FAF9F4;margin-bottom:10px;cursor:pointer}
+  .hist-item:active{transform:scale(.99)}
+  .hist-item img{width:58px;height:58px;border-radius:12px;object-fit:cover;flex:none;border:1px solid var(--line)}
+  .hist-item .hi-name{font-weight:800;font-size:17px;margin:0;color:var(--green-deep)}
+  .hist-item .hi-meta{margin:2px 0 0;font-size:14px;color:var(--ink-soft)}
+  .hist-item .hi-score{margin-left:auto;font-family:'Fraunces',serif;font-weight:700;font-size:20px;flex:none}
+  .empty{text-align:center;color:var(--ink-soft);font-size:16px;padding:10px 0}
+
+  .hidden{display:none !important}
+  footer{text-align:center;margin-top:26px;font-size:13px;color:var(--ink-soft)}
+  @media (max-width:380px){ body{font-size:18px} .care-grid{grid-template-columns:1fr} }
+  @media (min-width:680px){ .wrap{padding-top:30px} .leaf-ill{font-size:76px} }
+  @media (prefers-reduced-motion:reduce){ .spinner span{animation:none} .btn:active{transform:none} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="topbar">
+    <div class="logo">🌷</div>
+    <div>
+      <h1>Plantinha da Vovó</h1>
+      <p>A sabedoria da vovó com olhar de especialista 🌿</p>
+    </div>
+  </div>
+
+  <!-- TELA INICIAL -->
+  <section id="home">
+    <div class="card hero">
+      <div class="leaf-ill">🪴</div>
+      <h2>Oi, meu bem! Vamos cuidar da sua plantinha?</h2>
+      <p>Tire uma foto bem de perto das folhas. Eu digo qual é a planta, se está saudável, onde ela vive melhor e o que fazer para cuidar dela.</p>
+
+      <button class="btn btn-primary" id="btnCam" type="button"><span class="ico">📷</span> Tirar foto agora</button>
+      <button class="btn btn-secondary" id="btnGal" type="button"><span class="ico">🖼️</span> Escolher foto do celular</button>
+      <button class="btn btn-ghost hidden" id="btnHist" type="button"><span class="ico">🌱</span> Minhas plantas</button>
+
+      <input type="file" id="fileCam" accept="image/*" capture="environment">
+      <input type="file" id="fileGal" accept="image/*">
+
+      <p class="hint">Dica da vovó: chegue perto e deixe a folha bem iluminada. 🌞</p>
+    </div>
+
+    <div class="card">
+      <div class="steps">
+        <div class="step"><span class="n">1</span> Tire a foto da planta</div>
+        <div class="step"><span class="n">2</span> Espere alguns segundos</div>
+        <div class="step"><span class="n">3</span> Veja o cuidado certo para ela</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CARREGANDO -->
+  <section id="loading" class="hidden">
+    <div class="card">
+      <img id="loadImg" class="preview-img" alt="Foto da sua planta" style="margin-bottom:18px">
+      <div class="loading">
+        <div class="spinner"><span></span></div>
+        <h3>A vovó está olhando sua plantinha…</h3>
+        <p id="loadMsg">Olhando as folhinhas com carinho</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- RESULTADO -->
+  <section id="result" class="hidden"></section>
+
+  <!-- HISTÓRICO -->
+  <section id="history" class="hidden">
+    <div class="card">
+      <h3 class="sec-title"><span class="e">🌱</span> Minhas plantas</h3>
+      <div id="histList"><p class="empty">Carregando…</p></div>
+      <button class="btn btn-secondary" id="btnHistBack" type="button" style="margin-top:16px"><span class="ico">←</span> Voltar</button>
+    </div>
+  </section>
+
+  <!-- ERRO -->
+  <section id="error" class="hidden">
+    <div class="card">
+      <div class="errbox" id="errMsg"></div>
+      <button class="btn btn-primary" id="btnRetry" type="button" style="margin-top:16px"><span class="ico">🔄</span> Tentar de novo</button>
+    </div>
+  </section>
+
+  <footer>EDP Sistemas · Feito com 🌱 e o carinho da vovó</footer>
+</div>
+
+<script type="module">
+"use strict";
+
+/* =========================================================================
+   FIREBASE (opcional) — histórico "Minhas plantas".
+   Para ativar, cole a config do seu projeto Firebase abaixo.
+   Com "COLE_AQUI", o app funciona normalmente SEM histórico.
+   ========================================================================= */
+const FIREBASE_CONFIG = {
+  apiKey: "COLE_AQUI",
+  authDomain: "COLE_AQUI",
+  projectId: "COLE_AQUI",
+  storageBucket: "COLE_AQUI",
+  messagingSenderId: "COLE_AQUI",
+  appId: "COLE_AQUI"
+};
+
+const FB = "https://www.gstatic.com/firebasejs/10.12.5/";
+const Store = {
+  enabled:false, _db:null, _uid:null,
+  async init(){
+    if (JSON.stringify(FIREBASE_CONFIG).includes("COLE_AQUI")) return;
+    try{
+      const { initializeApp } = await import(FB+"firebase-app.js");
+      const { getAuth, signInAnonymously, onAuthStateChanged } = await import(FB+"firebase-auth.js");
+      const { getFirestore } = await import(FB+"firebase-firestore.js");
+      const app = initializeApp(FIREBASE_CONFIG);
+      const auth = getAuth(app);
+      this._db = getFirestore(app);
+      await signInAnonymously(auth);
+      await new Promise((res)=> onAuthStateChanged(auth,(u)=>{ if(u){ this._uid=u.uid; res(); }}));
+      this.enabled = true;
+    }catch(e){ console.warn("Firebase indisponível:", e && e.message); this.enabled=false; }
+  },
+  async save(rec){
+    if(!this.enabled) return;
+    try{
+      const { collection, addDoc, serverTimestamp } = await import(FB+"firebase-firestore.js");
+      await addDoc(collection(this._db,"analyses"),{
+        uid:this._uid, createdAt:serverTimestamp(),
+        nome_popular:rec.nome_popular||"Planta", saude_status:rec.saude_status||"",
+        saude_score:rec.saude_score||0, thumb:rec.thumb||"", data:rec.data||{}
+      });
+    }catch(e){ console.warn("Falha ao salvar:", e && e.message); }
+  },
+  async list(){
+    if(!this.enabled) return [];
+    try{
+      const { collection, query, where, orderBy, limit, getDocs } = await import(FB+"firebase-firestore.js");
+      const q = query(collection(this._db,"analyses"), where("uid","==",this._uid), orderBy("createdAt","desc"), limit(30));
+      const snap = await getDocs(q); const out=[]; snap.forEach(d=>out.push(d.data())); return out;
+    }catch(e){ console.warn("Falha ao listar:", e && e.message); return []; }
+  }
+};
+
+/* ============================ APP ============================ */
+const home=el('home'), loading=el('loading'), result=el('result'),
+      errorEl=el('error'), history=el('history'),
+      loadImg=el('loadImg'), loadMsg=el('loadMsg'), errMsg=el('errMsg'), btnHist=el('btnHist');
+function el(id){ return document.getElementById(id); }
+
+el('btnCam').addEventListener('click', ()=> el('fileCam').click());
+el('btnGal').addEventListener('click', ()=> el('fileGal').click());
+el('fileCam').addEventListener('change', onPick);
+el('fileGal').addEventListener('change', onPick);
+el('btnRetry').addEventListener('click', goHome);
+el('btnHistBack').addEventListener('click', goHome);
+btnHist.addEventListener('click', openHistory);
+
+let loadTimer=null, lastThumb="";
+let chatPlanta="";            // contexto da planta atual p/ a Vovó
+let chatHist=[];              // histórico do chat [{role, content}]
+const loadMsgs=[
+  'Olhando as folhinhas com carinho','Identificando a espécie da planta',
+  'Vendo onde ela vive melhor','Preparando as dicas de cuidado','Quase pronto…'
+];
+
+function show(section){
+  [home,loading,result,errorEl,history].forEach(s=> s.classList.add('hidden'));
+  section.classList.remove('hidden');
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+function goHome(){
+  stopVoice();
+  if(loadTimer){ clearInterval(loadTimer); loadTimer=null; }
+  el('fileCam').value=''; el('fileGal').value='';
+  show(home);
+}
+function startLoadingMessages(){
+  let i=0; loadMsg.textContent=loadMsgs[0];
+  loadTimer=setInterval(()=>{ i=(i+1)%loadMsgs.length; loadMsg.textContent=loadMsgs[i]; },2600);
+}
+
+function onPick(e){
+  const file=e.target.files && e.target.files[0];
+  if(!file) return;
+  Promise.all([ resizeImage(file,1024,0.82), resizeImage(file,240,0.7) ])
+    .then(([full,thumb])=>{ loadImg.src=full; lastThumb=thumb; show(loading); startLoadingMessages(); analyze(full); })
+    .catch(()=> showError('Não consegui abrir essa foto. Pode tentar tirar outra?'));
+}
+
+function resizeImage(file,maxSize,quality){
+  return new Promise((resolve,reject)=>{
+    const reader=new FileReader();
+    reader.onload=()=>{
+      const img=new Image();
+      img.onload=()=>{
+        let w=img.width,h=img.height;
+        if(w>h && w>maxSize){ h=Math.round(h*maxSize/w); w=maxSize; }
+        else if(h>=w && h>maxSize){ w=Math.round(w*maxSize/h); h=maxSize; }
+        const c=document.createElement('canvas'); c.width=w; c.height=h;
+        const ctx=c.getContext('2d'); ctx.fillStyle='#fff'; ctx.fillRect(0,0,w,h); ctx.drawImage(img,0,0,w,h);
+        try{ resolve(c.toDataURL('image/jpeg',quality)); }catch(err){ reject(err); }
+      };
+      img.onerror=()=>reject(new Error('img')); img.src=reader.result;
+    };
+    reader.onerror=()=>reject(new Error('read')); reader.readAsDataURL(file);
+  });
+}
+
+function analyze(dataUrl){
+  const controller=new AbortController();
+  const t=setTimeout(()=>controller.abort(),55000);
+  fetch('/api/analisar',{ method:'POST', headers:{'Content-Type':'application/json'},
+    signal:controller.signal, body:JSON.stringify({ mode:'analise', image:dataUrl }) })
+  .then(async r=>{ const j=await r.json().catch(()=>({})); if(!r.ok||!j.ok) throw new Error(j.error||'falha'); return j.data; })
+  .then(obj=>{
+    clearTimeout(t); if(loadTimer){ clearInterval(loadTimer); loadTimer=null; }
+    if(obj.e_planta===false){ showError('Hmm, não encontrei uma planta nessa foto. 🌱 Tente chegar mais perto das folhas, com boa luz.'); return; }
+    Store.save({ nome_popular:obj.nome_popular, saude_status:obj.saude_status, saude_score:obj.saude_score, thumb:lastThumb, data:obj });
+    renderResult(obj, loadImg.src);
+  })
+  .catch(err=>{
+    clearTimeout(t); if(loadTimer){ clearInterval(loadTimer); loadTimer=null; }
+    const aborted=err && err.name==='AbortError';
+    showError(aborted ? 'A análise demorou demais. Verifique a internet e tente de novo.'
+      : (err.message && err.message.length<120 ? err.message : 'Não consegui analisar agora. Verifique a internet e tente novamente.'));
+  });
+}
+
+function showError(msg){ errMsg.textContent=msg; show(errorEl); }
+
+function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function statusColor(status){
+  const s=(status||'').toLowerCase();
+  if(s.indexOf('saud')>-1) return {c:'var(--green)', cls:'baixa'};
+  if(s.indexOf('aten')>-1) return {c:'var(--amber)', cls:'media'};
+  return {c:'var(--coral)', cls:'alta'};
+}
+function confClass(c){ return (c||'média').toLowerCase().replace('é','e'); }
+function diffClass(d){ const s=(d||'').toLowerCase(); if(s.indexOf('fác')>-1||s.indexOf('fac')>-1) return 'facil'; if(s.indexOf('exig')>-1) return 'exigente'; return 'media'; }
+
+function renderResult(d, imgSrc){
+  stopVoice();
+  const conf=confClass(d.confianca);
+  const sc=Math.max(0,Math.min(100, parseInt(d.saude_score,10)||0));
+  const col=statusColor(d.saude_status);
+  const circ=2*Math.PI*52, dash=(sc/100)*circ;
+
+  // contexto p/ a Vovó responder dúvidas
+  chatPlanta = (d.nome_popular||'') + (d.nome_cientifico? ' ('+d.nome_cientifico+')':'') +
+               (d.saude_status? '. Estado: '+d.saude_status:'') + (d.diagnostico? '. '+d.diagnostico:'');
+  chatHist = [];
+
+  let html='';
+
+  html+='<div class="card"><div class="res-head">';
+  html+='<img class="res-thumb" src="'+imgSrc+'" alt="Sua planta">';
+  html+='<div><h2 class="res-name">'+esc(d.nome_popular||'Planta')+'</h2>';
+  if(d.nome_cientifico) html+='<p class="res-sci">'+esc(d.nome_cientifico)+'</p>';
+  if(d.familia) html+='<p class="res-fam">Família: '+esc(d.familia)+'</p>';
+  html+='<span class="badge '+conf+'">🔎 Certeza '+esc(d.confianca||'média')+'</span></div></div>';
+  html+='<button class="btn btn-hear" id="btnHear" type="button"><span class="ico">🔊</span> Ouvir os cuidados</button>';
+  html+='</div>';
+
+  html+='<div class="card"><div class="health">';
+  html+='<div class="gauge"><svg width="118" height="118" viewBox="0 0 118 118">';
+  html+='<circle cx="59" cy="59" r="52" fill="none" stroke="#EAE7DC" stroke-width="12"/>';
+  html+='<circle cx="59" cy="59" r="52" fill="none" stroke="'+col.c+'" stroke-width="12" stroke-linecap="round" stroke-dasharray="'+dash+' '+circ+'"/>';
+  html+='</svg><div class="num"><b>'+sc+'</b><small>de 100</small></div></div>';
+  html+='<div class="health-txt"><h3 style="color:'+col.c+'">'+esc(d.saude_status||'Saúde')+'</h3>';
+  html+='<p>'+esc(d.diagnostico||'')+'</p></div></div></div>';
+
+  if(Array.isArray(d.problemas) && d.problemas.length){
+    html+='<div class="card"><h3 class="sec-title"><span class="e">🩺</span> O que a vovó percebeu</h3>';
+    d.problemas.forEach(p=>{ const g=(p.gravidade||'média').toLowerCase().replace('é','e');
+      html+='<div class="problem"><span class="dot '+g+'"></span><div><b>'+esc(p.titulo||'')+'</b><p>'+esc(p.descricao||'')+'</p></div></div>'; });
+    html+='</div>';
+  }
+
+  // ONDE VIVE MELHOR
+  const w=d.onde_vive_melhor||{};
+  const wRows=[
+    {e:'🏠',t:'Ambiente',v:w.ambiente},{e:'📍',t:'Melhor lugar',v:w.local_sugerido},
+    {e:'💡',t:'Luz',v:w.luminosidade},{e:'🌡️',t:'Clima',v:w.clima_ideal}
+  ].filter(x=>x.v);
+  if(wRows.length || w.dificuldade){
+    html+='<div class="card"><h3 class="sec-title"><span class="e">🏡</span> Onde ela vive melhor</h3><div class="where-list">';
+    wRows.forEach(x=> html+='<div class="where"><span class="we">'+x.e+'</span><div><b>'+x.t+'</b><p>'+esc(x.v)+'</p></div></div>');
+    if(w.dificuldade) html+='<div class="where"><span class="we">⭐</span><div><b>Para cuidar</b><span class="diff '+diffClass(w.dificuldade)+'">'+esc(w.dificuldade)+'</span></div></div>';
+    html+='</div></div>';
+  }
+
+  const c=d.cuidados||{};
+  const cares=[
+    {e:'💧',t:'Regar',v:c.rega},{e:'☀️',t:'Luz',v:c.luz},{e:'🪴',t:'Terra',v:c.solo},
+    {e:'🌡️',t:'Clima',v:c.umidade_temperatura},{e:'🌿',t:'Adubo',v:c.adubacao}
+  ].filter(x=>x.v);
+  if(cares.length){
+    html+='<div class="card"><h3 class="sec-title"><span class="e">📋</span> Como cuidar dela</h3><div class="care-grid">';
+    cares.forEach(x=> html+='<div class="care"><div class="ce">'+x.e+'</div><h4>'+x.t+'</h4><p>'+esc(x.v)+'</p></div>');
+    html+='</div></div>';
+  }
+
+  if(Array.isArray(d.tratamento) && d.tratamento.length){
+    html+='<div class="card"><h3 class="sec-title"><span class="e">🧴</span> O que aplicar</h3>';
+    d.tratamento.forEach(t=> html+='<div class="treat"><span class="chk">✓</span><p>'+esc(t)+'</p></div>');
+    html+='</div>';
+  }
+
+  // SABEDORIA DA VOVÓ
+  if(d.sabedoria_vovo){
+    html+='<div class="card"><div class="vovo-card"><div class="vovo-head"><span class="ve">👵</span><h3>Sabedoria da Vovó</h3></div><p>'+esc(d.sabedoria_vovo)+'</p></div></div>';
+  }
+
+  if(d.dica) html+='<div class="card"><div class="tip"><span class="te">💚</span><div>'+esc(d.dica)+'</div></div></div>';
+
+  // PERGUNTE À VOVÓ
+  html+='<div class="card"><h3 class="sec-title"><span class="e">💬</span> Pergunte à Vovó</h3>';
+  html+='<div class="chat-log" id="chatLog"></div>';
+  html+='<div class="chat-row"><input id="chatInput" type="text" placeholder="Escreva sua dúvida sobre a planta…" autocomplete="off" enterkeyhint="send">';
+  html+='<button class="chat-send" id="chatSend" type="button" aria-label="Enviar">➤</button></div>';
+  html+='<div class="suggest" id="chatSuggest"></div></div>';
+
+  html+='<button class="btn btn-primary" id="btnAgain" type="button" style="margin-top:18px"><span class="ico">📷</span> Analisar outra planta</button>';
+  html+='<p class="disclaimer">As orientações são uma ajuda carinhosa para o dia a dia. Em casos sérios, procure um agrônomo ou floricultura de confiança. 🌷</p>';
+
+  result.innerHTML=html;
+
+  // liga os botões do resultado
+  el('btnAgain').addEventListener('click', goHome);
+  el('btnHear').addEventListener('click', ()=> speakCare(d));
+  setupChat(d);
+
+  show(result);
+}
+
+/* ---------- VOZ (ouvir os cuidados) ---------- */
+let speaking=false;
+function stopVoice(){ if(window.speechSynthesis){ window.speechSynthesis.cancel(); } speaking=false; }
+function speakCare(d){
+  if(!('speechSynthesis' in window)){ return; }
+  if(speaking){ stopVoice(); return; }
+  const c=d.cuidados||{};
+  const partes=[
+    d.nome_popular?('Esta planta é '+d.nome_popular+'.'):'',
+    d.diagnostico||'',
+    c.rega?('Para regar: '+c.rega+'.'):'',
+    c.luz?('Luz: '+c.luz+'.'):'',
+    (d.onde_vive_melhor && d.onde_vive_melhor.local_sugerido)?('Ela vive melhor '+d.onde_vive_melhor.local_sugerido+'.'):'',
+    d.sabedoria_vovo?('Dica da vovó: '+d.sabedoria_vovo):''
+  ].filter(Boolean).join(' ');
+  const u=new SpeechSynthesisUtterance(partes);
+  u.lang='pt-BR'; u.rate=0.95; u.pitch=1;
+  const v=(window.speechSynthesis.getVoices()||[]).find(x=>/pt[-_]?BR/i.test(x.lang));
+  if(v) u.voice=v;
+  u.onend=()=>{ speaking=false; };
+  speaking=true; window.speechSynthesis.speak(u);
+}
+
+/* ---------- PERGUNTE À VOVÓ ---------- */
+function setupChat(d){
+  const log=el('chatLog'), input=el('chatInput'), send=el('chatSend'), sug=el('chatSuggest');
+  const sugestoes=['Quanto devo regar?','Posso deixar no sol?','Está com folhas amarelas, o que faço?'];
+  sug.innerHTML='';
+  sugestoes.forEach(s=>{ const b=document.createElement('button'); b.className='chip'; b.type='button'; b.textContent=s;
+    b.addEventListener('click',()=>{ input.value=s; ask(); }); sug.appendChild(b); });
+
+  function addBubble(text, who){ const b=document.createElement('div'); b.className='bubble '+who; b.textContent=text; log.appendChild(b); b.scrollIntoView({behavior:'smooth',block:'nearest'}); return b; }
+
+  async function ask(){
+    const q=(input.value||'').trim(); if(!q) return;
+    input.value=''; send.disabled=true;
+    addBubble(q,'user'); chatHist.push({role:'user',content:q});
+    const typing=addBubble('A vovó está pensando…','vovo typing');
+    try{
+      const controller=new AbortController(); const t=setTimeout(()=>controller.abort(),50000);
+      const r=await fetch('/api/analisar',{ method:'POST', headers:{'Content-Type':'application/json'},
+        signal:controller.signal,
+        body:JSON.stringify({ mode:'pergunta', pergunta:q, contexto:chatPlanta, historico:chatHist.slice(-8) }) });
+      clearTimeout(t);
+      const j=await r.json().catch(()=>({}));
+      typing.remove();
+      if(!r.ok||!j.ok){ addBubble(j.error||'A vovó não conseguiu responder agora. Tente de novo.','vovo'); }
+      else { addBubble(j.text,'vovo'); chatHist.push({role:'assistant',content:j.text}); }
+    }catch(e){ typing.remove(); addBubble('Não consegui responder agora, meu bem. Verifique a internet e tente de novo.','vovo'); }
+    finally{ send.disabled=false; input.focus(); }
+  }
+  send.addEventListener('click', ask);
+  input.addEventListener('keydown', (e)=>{ if(e.key==='Enter'){ e.preventDefault(); ask(); } });
+}
+
+/* ---------- HISTÓRICO ---------- */
+async function openHistory(){
+  show(history);
+  const list=el('histList'); list.innerHTML='<p class="empty">Carregando…</p>';
+  const items=await Store.list();
+  if(!items.length){ list.innerHTML='<p class="empty">Você ainda não analisou nenhuma planta. 🌱</p>'; return; }
+  let html='';
+  items.forEach(it=>{
+    const col=statusColor(it.saude_status);
+    const when=it.createdAt && it.createdAt.toDate ? it.createdAt.toDate().toLocaleDateString('pt-BR') : '';
+    const thumb=it.thumb||'';
+    html+='<div class="hist-item">';
+    html+= thumb ? '<img src="'+thumb+'" alt="">' : '<div class="res-thumb" style="width:58px;height:58px;display:grid;place-items:center;font-size:26px">🪴</div>';
+    html+='<div><p class="hi-name">'+esc(it.nome_popular||'Planta')+'</p><p class="hi-meta">'+esc(it.saude_status||'')+(when?' · '+when:'')+'</p></div>';
+    html+='<span class="hi-score" style="color:'+col.c+'">'+(parseInt(it.saude_score,10)||0)+'</span></div>';
+  });
+  list.innerHTML=html;
+  list.querySelectorAll('.hist-item').forEach((node,idx)=>{
+    node.addEventListener('click',()=>{ const it=items[idx]; if(it && it.data){ lastThumb=it.thumb||''; renderResult(it.data, it.thumb||''); } });
+  });
+}
+
+// pré-carrega vozes (alguns navegadores carregam de forma assíncrona)
+if('speechSynthesis' in window){ window.speechSynthesis.getVoices(); window.speechSynthesis.onvoiceschanged=()=>window.speechSynthesis.getVoices(); }
+
+// inicializa Firebase em segundo plano
+Store.init().then(()=>{ if(Store.enabled) btnHist.classList.remove('hidden'); });
+</script>
+</body>
+</html>

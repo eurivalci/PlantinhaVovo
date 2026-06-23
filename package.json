@@ -1,0 +1,8 @@
+{
+  "name": "plantinha-da-vovo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "App que identifica plantas, avalia saude, diz onde vive melhor e traz a sabedoria caseira da vovo.",
+  "type": "module",
+  "engines": { "node": ">=18" }
+}
