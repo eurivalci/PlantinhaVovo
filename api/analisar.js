@@ -4,12 +4,22 @@
 //   mode:"analise"  -> recebe imagem base64, devolve JSON estruturado de diagnóstico.
 //   mode:"pergunta" -> recebe pergunta + contexto da planta, devolve texto da "Vovó".
 //
-// Contrato de entrada/saída IDÊNTICO à versão Anthropic — o front não muda.
+// Versão blindada:
+//   - fallback automático de modelo (MODELS abaixo)
+//   - responseMimeType tolerante (refaz sem ele se a API recusar)
+//   - diagnóstico real do erro propagado ao front quando DEBUG_ERRORS=1 (sem vazar a chave)
+//   - tolerância a "thinking" / finishReason MAX_TOKENS (resposta vazia)
+// Contrato de entrada/saída IDÊNTICO à versão anterior — o front não muda.
 
-// gemini-2.5-flash: free tier estável com visão. (2.0 Flash foi descontinuado.)
-// Sobrescreva com a env var GEMINI_MODEL se quiser testar 3.5-flash etc.
-const MODEL = process.env.GEMINI_MODEL || "gemini-2.5-flash";
+// Ordem de tentativa. O 1º que responder vence. Sobrescreva o principal com GEMINI_MODEL.
+const MODELS = [
+  process.env.GEMINI_MODEL || "gemini-2.5-flash",
+  "gemini-2.0-flash",
+  "gemini-2.5-flash-lite",
+].filter((v, i, a) => v && a.indexOf(v) === i);
+
 const API_BASE = "https://generativelanguage.googleapis.com/v1beta/models/";
+const DEBUG = process.env.DEBUG_ERRORS === "1"; // se "1", anexa o motivo técnico à mensagem de erro
 
 const MAX_IMAGE_BASE64 = 6 * 1024 * 1024; // ~6MB
 const MAX_PERGUNTA = 600;
@@ -64,7 +74,6 @@ const SYSTEM_PERGUNTA =
   "linguagem simples e afetuosa, sem termos difíceis. Seja prática e segura. Se sugerir receitas caseiras, apenas " +
   "as tradicionais e inofensivas. Responda só à pergunta da pessoa sobre a planta dela.";
 
-// Detecta o mime do data URL e devolve { mime, b64 } já limpo. Null se inválido.
 function sanitizeImage(input) {
   if (typeof input !== "string") return null;
   let mime = "image/jpeg";
@@ -76,7 +85,7 @@ function sanitizeImage(input) {
     if (comma === -1) return null;
     b64 = input.slice(comma + 1);
   }
-  if (!MIMES_OK.includes(mime)) mime = "image/jpeg"; // Gemini é tolerante; jpeg é o fallback seguro
+  if (!MIMES_OK.includes(mime)) mime = "image/jpeg";
   if (!b64 || b64.length > MAX_IMAGE_BASE64) return null;
   if (!/^[A-Za-z0-9+/=\s]+$/.test(b64)) return null;
   return { mime, b64: b64.replace(/\s+/g, "") };
@@ -90,31 +99,61 @@ function extractJson(text) {
   try { return JSON.parse(clean.slice(start, end + 1)); } catch (_) { return null; }
 }
 
-// Extrai texto da resposta do Gemini (candidates[].content.parts[].text).
 function textFrom(data) {
   const cand = data && data.candidates && data.candidates[0];
   if (!cand || !cand.content || !Array.isArray(cand.content.parts)) return "";
   return cand.content.parts.filter((p) => typeof p.text === "string").map((p) => p.text).join("\n");
 }
 
-// Identifica bloqueios por segurança / prompt para log e mensagem amigável.
-function blockReason(data) {
-  if (data && data.promptFeedback && data.promptFeedback.blockReason) return data.promptFeedback.blockReason;
+// Motivo legível p/ logs e (se DEBUG) p/ o front.
+function diagnose(data, httpStatus) {
+  if (data && data.error) return `api ${data.error.code || httpStatus}: ${data.error.status || ""} ${data.error.message || ""}`.trim();
+  if (data && data.promptFeedback && data.promptFeedback.blockReason) return `bloqueio: ${data.promptFeedback.blockReason}`;
   const cand = data && data.candidates && data.candidates[0];
-  if (cand && cand.finishReason && cand.finishReason !== "STOP" && cand.finishReason !== "MAX_TOKENS") return cand.finishReason;
-  return null;
+  if (cand && cand.finishReason && cand.finishReason !== "STOP") return `finishReason: ${cand.finishReason}`;
+  if (!textFrom(data)) return "resposta sem texto";
+  return "ok";
 }
 
-async function callGemini(apiKey, payload, signal) {
-  return fetch(API_BASE + encodeURIComponent(MODEL) + ":generateContent", {
-    method: "POST",
-    signal,
-    headers: {
-      "content-type": "application/json",
-      "x-goog-api-key": apiKey,
-    },
+// Chama um modelo. rich=true usa config avançada (JSON forçado + thinking desligado);
+// rich=false usa config mínima, compatível com qualquer modelo.
+async function callModel(apiKey, model, parts, system, maxTokens, rich, forceJson, signal) {
+  const generationConfig = { maxOutputTokens: maxTokens, temperature: forceJson ? 0.4 : 0.7 };
+  if (rich) {
+    if (forceJson) generationConfig.responseMimeType = "application/json";
+    // Desliga o "thinking" — senão modelos 2.5 gastam os tokens raciocinando
+    // e devolvem resposta vazia com finishReason MAX_TOKENS (causa do 502).
+    generationConfig.thinkingConfig = { thinkingBudget: 0 };
+  }
+  const payload = {
+    system_instruction: { parts: [{ text: system }] },
+    contents: [{ role: "user", parts }],
+    generationConfig,
+  };
+  const r = await fetch(API_BASE + encodeURIComponent(model) + ":generateContent", {
+    method: "POST", signal,
+    headers: { "content-type": "application/json", "x-goog-api-key": apiKey },
     body: JSON.stringify(payload),
   });
+  let data = null;
+  try { data = await r.json(); } catch (_) { data = null; }
+  return { httpOk: r.ok, status: r.status, data };
+}
+
+// Tenta modelos em ordem; em cada um, tenta config rica e depois mínima (compatível).
+async function generate(apiKey, parts, system, maxTokens, forceJson, signal) {
+  let lastDiag = "sem tentativa";
+  for (const model of MODELS) {
+    for (const rich of [true, false]) {
+      const { httpOk, status, data } = await callModel(apiKey, model, parts, system, maxTokens, rich, forceJson, signal);
+      const text = textFrom(data).trim();
+      if (httpOk && text) return { ok: true, text, model };
+      lastDiag = `[${model}${rich ? "+rich" : ""}] ${diagnose(data, status)}`;
+      console.error("Gemini tentativa falhou:", lastDiag);
+      if (status === 429) return { ok: false, diag: lastDiag, quota: true }; // cota: não adianta insistir
+    }
+  }
+  return { ok: false, diag: lastDiag };
 }
 
 export default async function handler(req, res) {
@@ -135,9 +174,13 @@ export default async function handler(req, res) {
 
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 50000);
+  const withDiag = (msg, diag, quota) =>
+    quota
+      ? "A cota gratuita esgotou por enquanto. Tente novamente mais tarde."
+      : (DEBUG && diag ? `${msg} [${diag}]` : msg);
 
   try {
-    // ---------- MODO PERGUNTA (chat com a Vovó) ----------
+    // ---------- MODO PERGUNTA ----------
     if (mode === "pergunta") {
       const pergunta = typeof body.pergunta === "string" ? body.pergunta.trim().slice(0, MAX_PERGUNTA) : "";
       if (!pergunta) { clearTimeout(timeout); return res.status(400).json({ ok: false, error: "Faça uma pergunta." }); }
@@ -145,68 +188,45 @@ export default async function handler(req, res) {
       const contexto = typeof body.contexto === "string" ? body.contexto.slice(0, 400) : "";
       const hist = Array.isArray(body.historico) ? body.historico.slice(-MAX_HISTORICO) : [];
 
-      // Gemini usa "contents" com role "user" | "model" (assistant -> model).
-      const contents = [];
-      if (contexto) {
-        contents.push({ role: "user", parts: [{ text: "A planta que estou cuidando: " + contexto }] });
-        contents.push({ role: "model", parts: [{ text: "Certo, meu bem, pode perguntar sobre ela." }] });
-      }
+      // monta um único turno de usuário com o histórico embutido (simples e robusto)
+      let prefixo = "";
+      if (contexto) prefixo += "A planta que estou cuidando: " + contexto + "\n";
       for (const m of hist) {
-        if (m && (m.role === "user" || m.role === "assistant") && typeof m.content === "string") {
-          contents.push({ role: m.role === "assistant" ? "model" : "user", parts: [{ text: m.content.slice(0, 600) }] });
+        if (m && typeof m.content === "string") {
+          const quem = m.role === "assistant" ? "Vovó" : "Pessoa";
+          prefixo += `${quem}: ${m.content.slice(0, 600)}\n`;
         }
       }
-      contents.push({ role: "user", parts: [{ text: pergunta }] });
+      const texto = (prefixo ? prefixo + "Pessoa: " : "") + pergunta;
+      const parts = [{ text: texto }];
 
-      const payload = {
-        system_instruction: { parts: [{ text: SYSTEM_PERGUNTA }] },
-        contents,
-        generationConfig: { maxOutputTokens: 500, temperature: 0.7 },
-      };
-
-      const apiRes = await callGemini(apiKey, payload, controller.signal);
+      const out = await generate(apiKey, parts, SYSTEM_PERGUNTA, 500, false, controller.signal);
       clearTimeout(timeout);
-      if (!apiRes.ok) {
-        const detail = await apiRes.text().catch(() => "");
-        console.error("Gemini erro (pergunta)", apiRes.status, detail.slice(0, 300));
-        return res.status(502).json({ ok: false, error: "A Vovó não conseguiu responder agora. Tente de novo em instantes." });
+      if (!out.ok) {
+        return res.status(502).json({ ok: false, error: withDiag("A Vovó não conseguiu responder agora. Tente de novo em instantes.", out.diag, out.quota) });
       }
-      const data = await apiRes.json();
-      const block = blockReason(data);
-      if (block) console.warn("Gemini bloqueio (pergunta):", block);
-      const text = textFrom(data).trim();
-      return res.status(200).json({ ok: true, text: text || "Desculpe, meu bem, não entendi. Pode perguntar de outro jeito?" });
+      return res.status(200).json({ ok: true, text: out.text });
     }
 
-    // ---------- MODO ANÁLISE (imagem) ----------
+    // ---------- MODO ANÁLISE ----------
     const img = sanitizeImage(body.image);
     if (!img) { clearTimeout(timeout); return res.status(400).json({ ok: false, error: "Imagem inválida ou muito grande." }); }
 
-    const payload = {
-      system_instruction: { parts: [{ text: SYSTEM_ANALISE }] },
-      contents: [{
-        role: "user",
-        parts: [
-          { inline_data: { mime_type: img.mime, data: img.b64 } },
-          { text: "Identifique esta planta, avalie a saúde, diga onde ela vive melhor e o que aplicar. Inclua uma sabedoria caseira da vovó. Responda só com o JSON." },
-        ],
-      }],
-      // responseMimeType força saída JSON pura — mais robusto que só pedir no prompt.
-      generationConfig: { maxOutputTokens: 1600, temperature: 0.4, responseMimeType: "application/json" },
-    };
+    const parts = [
+      { inline_data: { mime_type: img.mime, data: img.b64 } },
+      { text: "Identifique esta planta, avalie a saúde, diga onde ela vive melhor e o que aplicar. Inclua uma sabedoria caseira da vovó. Responda só com o JSON." },
+    ];
 
-    const apiRes = await callGemini(apiKey, payload, controller.signal);
+    const out = await generate(apiKey, parts, SYSTEM_ANALISE, 2048, true, controller.signal);
     clearTimeout(timeout);
-    if (!apiRes.ok) {
-      const detail = await apiRes.text().catch(() => "");
-      console.error("Gemini erro (analise)", apiRes.status, detail.slice(0, 300));
-      return res.status(502).json({ ok: false, error: "Não foi possível analisar agora. Tente novamente em instantes." });
+    if (!out.ok) {
+      return res.status(502).json({ ok: false, error: withDiag("Não foi possível analisar agora. Tente novamente em instantes.", out.diag, out.quota) });
     }
-    const data = await apiRes.json();
-    const block = blockReason(data);
-    if (block) console.warn("Gemini bloqueio (analise):", block);
-    const parsed = extractJson(textFrom(data));
-    if (!parsed) return res.status(502).json({ ok: false, error: "Resposta inesperada. Tente outra foto com mais luz." });
+    const parsed = extractJson(out.text);
+    if (!parsed) {
+      console.error("JSON não extraído. Texto:", out.text.slice(0, 300));
+      return res.status(502).json({ ok: false, error: withDiag("Resposta inesperada. Tente outra foto com mais luz.", "json-parse", false) });
+    }
     return res.status(200).json({ ok: true, data: parsed });
 
   } catch (err) {
