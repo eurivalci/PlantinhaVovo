@@ -190,7 +190,7 @@
 
       <button class="btn btn-primary" id="btnCam" type="button"><span class="ico">📷</span> Tirar foto agora</button>
       <button class="btn btn-secondary" id="btnGal" type="button"><span class="ico">🖼️</span> Escolher foto do celular</button>
-      <button class="btn btn-ghost hidden" id="btnHist" type="button"><span class="ico">🌱</span> Minhas plantas</button>
+      <button class="btn btn-ghost" id="btnHist" type="button"><span class="ico">🌱</span> Minhas plantas</button>
 
       <input type="file" id="fileCam" accept="image/*" capture="environment">
       <input type="file" id="fileGal" accept="image/*">
@@ -263,6 +263,27 @@ const FIREBASE_CONFIG = {
 const FB = "https://www.gstatic.com/firebasejs/10.12.5/";
 const Store = {
   enabled:false, _db:null, _uid:null,
+  LS_KEY:"pv_historico",          // histórico local (sempre funciona, mesmo sem Firebase)
+  LS_MAX:30,                       // mantém as 30 análises mais recentes
+
+  // ---- localStorage (base sempre disponível) ----
+  _localList(){
+    try{ const raw=localStorage.getItem(this.LS_KEY); const arr=raw?JSON.parse(raw):[]; return Array.isArray(arr)?arr:[]; }
+    catch(_){ return []; }
+  },
+  _localSave(rec){
+    try{
+      let arr=this._localList();
+      arr.unshift(rec);                       // mais novo primeiro
+      arr=arr.slice(0, this.LS_MAX);          // FIFO: descarta os mais antigos
+      // grava com proteção contra estouro de cota (remove antigos e tenta de novo)
+      while(arr.length){
+        try{ localStorage.setItem(this.LS_KEY, JSON.stringify(arr)); return; }
+        catch(e){ arr=arr.slice(0, Math.max(1, arr.length-5)); if(arr.length<=1) { try{ localStorage.setItem(this.LS_KEY, JSON.stringify(arr)); }catch(_){} return; } }
+      }
+    }catch(_){ /* localStorage indisponível: histórico em nuvem ainda funciona se Firebase ativo */ }
+  },
+
   async init(){
     if (JSON.stringify(FIREBASE_CONFIG).includes("COLE_AQUI")) return;
     try{
@@ -275,26 +296,35 @@ const Store = {
       await signInAnonymously(auth);
       await new Promise((res)=> onAuthStateChanged(auth,(u)=>{ if(u){ this._uid=u.uid; res(); }}));
       this.enabled = true;
-    }catch(e){ console.warn("Firebase indisponível:", e && e.message); this.enabled=false; }
+    }catch(e){ console.warn("Firebase indisponível (histórico segue no aparelho):", e && e.message); this.enabled=false; }
   },
   async save(rec){
+    const local = {
+      nome_popular:rec.nome_popular||"Planta", saude_status:rec.saude_status||"",
+      saude_score:rec.saude_score||0, thumb:rec.thumb||"", data:rec.data||{},
+      createdAt: Date.now()
+    };
+    this._localSave(local);            // 1) sempre salva no aparelho
     if(!this.enabled) return;
-    try{
+    try{                               // 2) e na nuvem, se disponível
       const { collection, addDoc, serverTimestamp } = await import(FB+"firebase-firestore.js");
       await addDoc(collection(this._db,"analyses"),{
         uid:this._uid, createdAt:serverTimestamp(),
-        nome_popular:rec.nome_popular||"Planta", saude_status:rec.saude_status||"",
-        saude_score:rec.saude_score||0, thumb:rec.thumb||"", data:rec.data||{}
+        nome_popular:local.nome_popular, saude_status:local.saude_status,
+        saude_score:local.saude_score, thumb:local.thumb, data:local.data
       });
-    }catch(e){ console.warn("Falha ao salvar:", e && e.message); }
+    }catch(e){ console.warn("Falha ao salvar na nuvem (continua salvo no aparelho):", e && e.message); }
   },
   async list(){
-    if(!this.enabled) return [];
-    try{
-      const { collection, query, where, orderBy, limit, getDocs } = await import(FB+"firebase-firestore.js");
-      const q = query(collection(this._db,"analyses"), where("uid","==",this._uid), orderBy("createdAt","desc"), limit(30));
-      const snap = await getDocs(q); const out=[]; snap.forEach(d=>out.push(d.data())); return out;
-    }catch(e){ console.warn("Falha ao listar:", e && e.message); return []; }
+    if(this.enabled){
+      try{
+        const { collection, query, where, orderBy, limit, getDocs } = await import(FB+"firebase-firestore.js");
+        const q = query(collection(this._db,"analyses"), where("uid","==",this._uid), orderBy("createdAt","desc"), limit(30));
+        const snap = await getDocs(q); const out=[]; snap.forEach(d=>out.push(d.data()));
+        if(out.length) return out;
+      }catch(e){ console.warn("Falha ao listar da nuvem (usando o aparelho):", e && e.message); }
+    }
+    return this._localList();          // fallback: histórico do aparelho
   }
 };
 
@@ -478,12 +508,16 @@ function renderResult(d, imgSrc){
   html+='<div class="suggest" id="chatSuggest"></div></div>';
 
   html+='<button class="btn btn-primary" id="btnAgain" type="button" style="margin-top:18px"><span class="ico">📷</span> Analisar outra planta</button>';
+  html+='<button class="btn btn-secondary" id="btnHome" type="button"><span class="ico">🏠</span> Voltar ao início</button>';
+  html+='<button class="btn btn-ghost" id="btnHistFromResult" type="button"><span class="ico">🌱</span> Ver minhas plantas</button>';
   html+='<p class="disclaimer">As orientações são uma ajuda carinhosa para o dia a dia. Em casos sérios, procure um agrônomo ou floricultura de confiança. 🌷</p>';
 
   result.innerHTML=html;
 
   // liga os botões do resultado
   el('btnAgain').addEventListener('click', goHome);
+  el('btnHome').addEventListener('click', goHome);
+  el('btnHistFromResult').addEventListener('click', openHistory);
   el('btnHear').addEventListener('click', ()=> speakCare(d));
   setupChat(d);
 
@@ -554,7 +588,11 @@ async function openHistory(){
   let html='';
   items.forEach(it=>{
     const col=statusColor(it.saude_status);
-    const when=it.createdAt && it.createdAt.toDate ? it.createdAt.toDate().toLocaleDateString('pt-BR') : '';
+    let when='';
+    if(it.createdAt){
+      if(it.createdAt.toDate) when=it.createdAt.toDate().toLocaleDateString('pt-BR');
+      else if(typeof it.createdAt==='number') when=new Date(it.createdAt).toLocaleDateString('pt-BR');
+    }
     const thumb=it.thumb||'';
     html+='<div class="hist-item">';
     html+= thumb ? '<img src="'+thumb+'" alt="">' : '<div class="res-thumb" style="width:58px;height:58px;display:grid;place-items:center;font-size:26px">🪴</div>';
@@ -570,8 +608,8 @@ async function openHistory(){
 // pré-carrega vozes (alguns navegadores carregam de forma assíncrona)
 if('speechSynthesis' in window){ window.speechSynthesis.getVoices(); window.speechSynthesis.onvoiceschanged=()=>window.speechSynthesis.getVoices(); }
 
-// inicializa Firebase em segundo plano
-Store.init().then(()=>{ if(Store.enabled) btnHist.classList.remove('hidden'); });
+// inicializa Firebase em segundo plano (histórico já funciona no aparelho mesmo sem ele)
+Store.init();
 </script>
 </body>
 </html>
