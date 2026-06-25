@@ -25,9 +25,9 @@
   .wrap{max-width:600px;margin:0 auto;padding:18px 18px 110px}
 
   .topbar{display:flex;align-items:center;gap:13px;padding:14px 6px 6px}
-  .logo{width:52px;height:52px;border-radius:18px;flex:none;
-    background:linear-gradient(135deg,#7fae5c,#2F6B3C);display:grid;place-items:center;
-    font-size:27px;box-shadow:var(--shadow)}
+  .logo{width:56px;height:56px;border-radius:18px;flex:none;overflow:hidden;
+    box-shadow:var(--shadow);background:var(--bg)}
+  .logo img{width:100%;height:100%;object-fit:contain;display:block}
   .topbar h1{font-family:'Fraunces',serif;font-weight:700;font-size:25px;margin:0;line-height:1.05;color:var(--green-deep)}
   .topbar p{margin:3px 0 0;font-size:14.5px;color:var(--ink-soft)}
 
@@ -247,7 +247,7 @@
 <div class="wrap">
 
   <div class="topbar">
-    <div class="logo">🌷</div>
+    <div class="logo"><img src="/logo.png" alt="Plantinha da Vovó"></div>
     <div>
       <h1>Plantinha da Vovó</h1>
       <p>A sabedoria da vovó com olhar de especialista 🌿</p>
@@ -257,7 +257,7 @@
   <!-- BOAS-VINDAS (apenas na primeira vez) -->
   <section id="welcome" class="hidden">
     <div class="card hero" style="text-align:center">
-      <div class="leaf-ill">🌷</div>
+      <div style="margin:6px auto 18px;width:160px"><img src="/logo.png" alt="Plantinha da Vovó" style="width:100%;height:auto;display:block"></div>
       <h2 style="font-family:'Fraunces',serif;font-weight:600;font-size:26px;color:var(--green-deep);margin:0 0 10px;line-height:1.2">Bem-vinda ao Plantinha da Vovó!</h2>
       <p style="color:var(--ink-soft);margin:0 0 22px;font-size:18px;line-height:1.5">Como você gostaria de ser chamada?</p>
       <input id="nameInput" class="name-input" type="text" placeholder="Seu nome ou apelido…" autocomplete="given-name" maxlength="30">
@@ -690,7 +690,7 @@ function renderResult(d, imgSrc){
   result.innerHTML=html;
 
   // liga os botões do resultado
-  el('btnShare').addEventListener('click', ()=> shareResult(d, loadImg.src));
+  el('btnShare').addEventListener('click', ()=> shareResult(d));
   el('btnAgain').addEventListener('click', goHome);
   el('btnHome').addEventListener('click', goHome);
   el('btnHistFromResult').addEventListener('click', openHistory);
@@ -859,21 +859,10 @@ function showShareToast(){
   const t=el('shareToast'); t.classList.add('show');
   setTimeout(()=>t.classList.remove('show'),3200);
 }
-async function shareResult(d,imgSrc){
+async function shareResult(d){
   const text=buildShareText(d);
   const title=(d.nome_popular||'Planta')+' — Plantinha da Vovó';
   if(navigator.share){
-    const files=[];
-    // foto da planta
-    if(imgSrc&&imgSrc.startsWith('data:')){
-      try{ const b=await fetch(imgSrc).then(r=>r.blob()); files.push(new File([b],'planta.jpg',{type:'image/jpeg'})); }catch(_){}
-    }
-    // logo do app
-    try{ const b=await fetch('/logo.png').then(r=>r.blob()); files.push(new File([b],'plantinha-da-vovo.png',{type:'image/png'})); }catch(_){}
-
-    if(files.length&&navigator.canShare&&navigator.canShare({files})){
-      try{ await navigator.share({title,text,files}); return; }catch(_){}
-    }
     try{ await navigator.share({title,text}); return; }catch(_){}
   }
   try{ await navigator.clipboard.writeText(text); showShareToast(); }catch(_){}
