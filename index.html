@@ -690,7 +690,7 @@ function renderResult(d, imgSrc){
   result.innerHTML=html;
 
   // liga os botões do resultado
-  el('btnShare').addEventListener('click', ()=> shareResult(d));
+  el('btnShare').addEventListener('click', ()=> shareResult(d, loadImg.src));
   el('btnAgain').addEventListener('click', goHome);
   el('btnHome').addEventListener('click', goHome);
   el('btnHistFromResult').addEventListener('click', openHistory);
@@ -859,10 +859,18 @@ function showShareToast(){
   const t=el('shareToast'); t.classList.add('show');
   setTimeout(()=>t.classList.remove('show'),3200);
 }
-async function shareResult(d){
+async function shareResult(d,imgSrc){
   const text=buildShareText(d);
   const title=(d.nome_popular||'Planta')+' — Plantinha da Vovó';
   if(navigator.share){
+    const files=[];
+    if(imgSrc&&imgSrc.startsWith('data:')){
+      try{ const b=await fetch(imgSrc).then(r=>r.blob()); files.push(new File([b],'planta.jpg',{type:'image/jpeg'})); }catch(_){}
+    }
+    try{ const b=await fetch('/logo.png').then(r=>r.blob()); files.push(new File([b],'plantinha-da-vovo.png',{type:'image/png'})); }catch(_){}
+    if(files.length&&navigator.canShare&&navigator.canShare({files})){
+      try{ await navigator.share({title,text,files}); return; }catch(_){}
+    }
     try{ await navigator.share({title,text}); return; }catch(_){}
   }
   try{ await navigator.clipboard.writeText(text); showShareToast(); }catch(_){}
