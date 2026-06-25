@@ -852,6 +852,7 @@ function buildShareText(d){
   if(w.local_sugerido) lines.push('🏡 Melhor lugar: '+w.local_sugerido);
   if(d.sabedoria_vovo) lines.push('\n👵 Dica da Vovó: '+d.sabedoria_vovo);
   lines.push('\n🌷 Identificado pelo Plantinha da Vovó');
+  lines.push('https://plantinha-vovo.vercel.app/');
   return lines.join('\n');
 }
 function showShareToast(){
@@ -862,14 +863,16 @@ async function shareResult(d,imgSrc){
   const text=buildShareText(d);
   const title=(d.nome_popular||'Planta')+' — Plantinha da Vovó';
   if(navigator.share){
-    if(imgSrc&&imgSrc.startsWith('data:')&&navigator.canShare){
-      try{
-        const blob=await fetch(imgSrc).then(r=>r.blob());
-        const file=new File([blob],'planta.jpg',{type:'image/jpeg'});
-        if(navigator.canShare({files:[file]})){
-          await navigator.share({title,text,files:[file]}); return;
-        }
-      }catch(_){ /* fallback para texto */ }
+    const files=[];
+    // foto da planta
+    if(imgSrc&&imgSrc.startsWith('data:')){
+      try{ const b=await fetch(imgSrc).then(r=>r.blob()); files.push(new File([b],'planta.jpg',{type:'image/jpeg'})); }catch(_){}
+    }
+    // logo do app
+    try{ const b=await fetch('/logo.png').then(r=>r.blob()); files.push(new File([b],'plantinha-da-vovo.png',{type:'image/png'})); }catch(_){}
+
+    if(files.length&&navigator.canShare&&navigator.canShare({files})){
+      try{ await navigator.share({title,text,files}); return; }catch(_){}
     }
     try{ await navigator.share({title,text}); return; }catch(_){}
   }
