@@ -247,7 +247,7 @@
 <div class="wrap">
 
   <div class="topbar">
-    <div class="logo"><img src="/logo.png" alt="Plantinha da Vovó"></div>
+    <div class="logo"><img src="logo.png" alt="Plantinha da Vovó"></div>
     <div>
       <h1>Plantinha da Vovó</h1>
       <p>A sabedoria da vovó com olhar de especialista 🌿</p>
@@ -257,7 +257,7 @@
   <!-- BOAS-VINDAS (apenas na primeira vez) -->
   <section id="welcome" class="hidden">
     <div class="card hero" style="text-align:center">
-      <div style="margin:6px auto 18px;width:160px"><img src="/logo.png" alt="Plantinha da Vovó" style="width:100%;height:auto;display:block"></div>
+      <div style="margin:6px auto 18px;width:160px"><img src="logo.png" alt="Plantinha da Vovó" style="width:100%;height:auto;display:block"></div>
       <h2 style="font-family:'Fraunces',serif;font-weight:600;font-size:26px;color:var(--green-deep);margin:0 0 10px;line-height:1.2">Bem-vinda ao Plantinha da Vovó!</h2>
       <p style="color:var(--ink-soft);margin:0 0 22px;font-size:18px;line-height:1.5">Como você gostaria de ser chamada?</p>
       <input id="nameInput" class="name-input" type="text" placeholder="Seu nome ou apelido…" autocomplete="given-name" maxlength="30">
@@ -867,7 +867,7 @@ async function shareResult(d,imgSrc){
     if(imgSrc&&imgSrc.startsWith('data:')){
       try{ const b=await fetch(imgSrc).then(r=>r.blob()); files.push(new File([b],'planta.jpg',{type:'image/jpeg'})); }catch(_){}
     }
-    try{ const b=await fetch('/logo.png').then(r=>r.blob()); files.push(new File([b],'plantinha-da-vovo.png',{type:'image/png'})); }catch(_){}
+    try{ const b=await fetch('logo.png').then(r=>r.blob()); files.push(new File([b],'plantinha-da-vovo.png',{type:'image/png'})); }catch(_){}
     if(files.length&&navigator.canShare&&navigator.canShare({files})){
       try{ await navigator.share({title,text,files}); return; }catch(_){}
     }
