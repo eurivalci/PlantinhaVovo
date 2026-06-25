@@ -91,12 +91,44 @@ function sanitizeImage(input) {
   return { mime, b64: b64.replace(/\s+/g, "") };
 }
 
+// Tenta fechar um JSON cortado no meio (resposta truncada por limite de tokens):
+// remove vírgula/par incompleto no fim e fecha strings, colchetes e chaves abertos.
+function repairTruncatedJson(s) {
+  let str = s;
+  // se terminou no meio de uma string, fecha a aspa
+  let inStr = false, esc = false;
+  const stack = [];
+  for (let i = 0; i < str.length; i++) {
+    const ch = str[i];
+    if (esc) { esc = false; continue; }
+    if (ch === "\\") { esc = true; continue; }
+    if (ch === '"') { inStr = !inStr; continue; }
+    if (inStr) continue;
+    if (ch === "{" || ch === "[") stack.push(ch);
+    else if (ch === "}" || ch === "]") stack.pop();
+  }
+  if (inStr) str += '"';
+  // remove lixo de um par chave/valor incompleto no final (ex.: ..."rega": )
+  str = str.replace(/,\s*$/g, "").replace(/:\s*$/g, ": null").replace(/,\s*([}\]])/g, "$1");
+  // fecha o que ficou aberto, na ordem inversa
+  for (let i = stack.length - 1; i >= 0; i--) str += stack[i] === "{" ? "}" : "]";
+  return str;
+}
+
 function extractJson(text) {
   const clean = String(text || "").replace(/```json/gi, "").replace(/```/g, "").trim();
   const start = clean.indexOf("{");
+  if (start === -1) return null;
   const end = clean.lastIndexOf("}");
-  if (start === -1 || end === -1) return null;
-  try { return JSON.parse(clean.slice(start, end + 1)); } catch (_) { return null; }
+  // 1) tentativa direta (resposta completa)
+  if (end > start) {
+    try { return JSON.parse(clean.slice(start, end + 1)); } catch (_) { /* tenta reparar abaixo */ }
+  }
+  // 2) tentativa de reparo (resposta truncada)
+  try {
+    const repaired = repairTruncatedJson(clean.slice(start));
+    return JSON.parse(repaired);
+  } catch (_) { return null; }
 }
 
 function textFrom(data) {
@@ -217,7 +249,7 @@ export default async function handler(req, res) {
       { text: "Identifique esta planta, avalie a saúde, diga onde ela vive melhor e o que aplicar. Inclua uma sabedoria caseira da vovó. Responda só com o JSON." },
     ];
 
-    const out = await generate(apiKey, parts, SYSTEM_ANALISE, 2048, true, controller.signal);
+    const out = await generate(apiKey, parts, SYSTEM_ANALISE, 8192, true, controller.signal);
     clearTimeout(timeout);
     if (!out.ok) {
       return res.status(502).json({ ok: false, error: withDiag("Não foi possível analisar agora. Tente novamente em instantes.", out.diag, out.quota) });
