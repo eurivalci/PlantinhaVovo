@@ -21,9 +21,8 @@
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
   html,body{margin:0;padding:0}
   body{background:var(--bg);color:var(--ink);font-family:'Nunito',system-ui,sans-serif;
-    font-size:19px;line-height:1.5;-webkit-font-smoothing:antialiased;
-    padding-bottom:env(safe-area-inset-bottom);min-height:100vh}
-  .wrap{max-width:600px;margin:0 auto;padding:18px 18px 40px}
+    font-size:19px;line-height:1.5;-webkit-font-smoothing:antialiased;min-height:100vh}
+  .wrap{max-width:600px;margin:0 auto;padding:18px 18px 110px}
 
   .topbar{display:flex;align-items:center;gap:13px;padding:14px 6px 6px}
   .logo{width:52px;height:52px;border-radius:18px;flex:none;
@@ -168,6 +167,40 @@
   @media (max-width:380px){ body{font-size:18px} .care-grid{grid-template-columns:1fr} }
   @media (min-width:680px){ .wrap{padding-top:30px} .leaf-ill{font-size:76px} }
   @media (prefers-reduced-motion:reduce){ .spinner span{animation:none} .btn:active{transform:none} }
+
+  /* ---- BOAS-VINDAS ---- */
+  .name-input{width:100%;border:2px solid var(--line);border-radius:14px;padding:16px;
+    font-family:'Nunito',sans-serif;font-size:19px;color:var(--ink);background:#fff;
+    margin-bottom:14px;box-sizing:border-box}
+  .name-input:focus{outline:none;border-color:var(--green)}
+
+  /* ---- BUSCA NO HISTÓRICO ---- */
+  .search-wrap{position:relative;margin-bottom:14px}
+  .search-input{width:100%;border:2px solid var(--line);border-radius:14px;
+    padding:13px 16px 13px 44px;font-family:'Nunito',sans-serif;font-size:17px;
+    color:var(--ink);background:#fff;box-sizing:border-box}
+  .search-input:focus{outline:none;border-color:var(--green)}
+  .search-ico{position:absolute;left:14px;top:50%;transform:translateY(-50%);
+    font-size:20px;pointer-events:none}
+
+  /* ---- BOTÃO EXCLUIR NO HISTÓRICO ---- */
+  .del-btn{flex:none;background:var(--coral-soft);border:none;border-radius:10px;
+    width:36px;height:36px;display:grid;place-items:center;font-size:17px;
+    cursor:pointer;color:var(--coral)}
+  .del-btn:active{transform:scale(.93)}
+
+  /* ---- BARRA DE NAVEGAÇÃO INFERIOR ---- */
+  .bottom-nav{position:fixed;bottom:0;left:0;right:0;background:#fff;
+    border-top:1px solid var(--line);display:flex;justify-content:space-around;
+    align-items:stretch;padding-bottom:env(safe-area-inset-bottom);z-index:100;
+    box-shadow:0 -4px 16px rgba(33,78,42,.08)}
+  .nav-btn{flex:1;border:none;background:transparent;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;gap:3px;padding:10px 4px;cursor:pointer;
+    color:var(--ink-soft);font-family:'Nunito',sans-serif;font-size:11px;font-weight:700;
+    min-height:64px;transition:color .15s ease}
+  .nav-btn span{font-size:24px;line-height:1}
+  .nav-btn.active{color:var(--green)}
+  .nav-btn:active{transform:scale(.94)}
 </style>
 </head>
 <body>
@@ -181,11 +214,22 @@
     </div>
   </div>
 
+  <!-- BOAS-VINDAS (apenas na primeira vez) -->
+  <section id="welcome" class="hidden">
+    <div class="card hero" style="text-align:center">
+      <div class="leaf-ill">🌷</div>
+      <h2 style="font-family:'Fraunces',serif;font-weight:600;font-size:26px;color:var(--green-deep);margin:0 0 10px;line-height:1.2">Bem-vinda ao Plantinha da Vovó!</h2>
+      <p style="color:var(--ink-soft);margin:0 0 22px;font-size:18px;line-height:1.5">Como você gostaria de ser chamada?</p>
+      <input id="nameInput" class="name-input" type="text" placeholder="Seu nome ou apelido…" autocomplete="given-name" maxlength="30">
+      <button class="btn btn-primary" id="btnStart" type="button"><span class="ico">🌿</span> Começar</button>
+    </div>
+  </section>
+
   <!-- TELA INICIAL -->
-  <section id="home">
+  <section id="home" class="hidden">
     <div class="card hero">
       <div class="leaf-ill">🪴</div>
-      <h2>Oi, meu bem! Vamos cuidar da sua plantinha?</h2>
+      <h2 id="homeGreeting">Oi, meu bem! Vamos cuidar da sua plantinha?</h2>
       <p>Tire uma foto bem de perto das folhas. Eu digo qual é a planta, se está saudável, onde ela vive melhor e o que fazer para cuidar dela.</p>
 
       <button class="btn btn-primary" id="btnCam" type="button"><span class="ico">📷</span> Tirar foto agora</button>
@@ -226,6 +270,10 @@
   <section id="history" class="hidden">
     <div class="card">
       <h3 class="sec-title"><span class="e">🌱</span> Minhas plantas</h3>
+      <div class="search-wrap">
+        <span class="search-ico">🔍</span>
+        <input id="histSearch" class="search-input" type="search" placeholder="Buscar planta…" autocomplete="off">
+      </div>
       <div id="histList"><p class="empty">Carregando…</p></div>
       <button class="btn btn-secondary" id="btnHistBack" type="button" style="margin-top:16px"><span class="ico">←</span> Voltar</button>
     </div>
@@ -241,6 +289,21 @@
 
   <footer>EDP Sistemas · Feito com 🌱 e o carinho da vovó</footer>
 </div>
+
+<nav class="bottom-nav">
+  <button class="nav-btn active" id="navHome" type="button">
+    <span>🏠</span>
+    <small>Início</small>
+  </button>
+  <button class="nav-btn" id="navCam" type="button">
+    <span>📷</span>
+    <small>Analisar</small>
+  </button>
+  <button class="nav-btn" id="navPlants" type="button">
+    <span>🌱</span>
+    <small>Minhas plantas</small>
+  </button>
+</nav>
 
 <script type="module">
 "use strict";
@@ -283,6 +346,14 @@ const Store = {
       }
     }catch(_){ /* localStorage indisponível: histórico em nuvem ainda funciona se Firebase ativo */ }
   },
+  _localDelete(createdAt){
+    try{
+      let arr=this._localList();
+      arr=arr.filter(item=>item.createdAt!==createdAt);
+      localStorage.setItem(this.LS_KEY, JSON.stringify(arr));
+    }catch(_){}
+  },
+  async delete(createdAt){ this._localDelete(createdAt); },
 
   async init(){
     if (JSON.stringify(FIREBASE_CONFIG).includes("COLE_AQUI")) return;
@@ -329,7 +400,7 @@ const Store = {
 };
 
 /* ============================ APP ============================ */
-const home=el('home'), loading=el('loading'), result=el('result'),
+const welcome=el('welcome'), home=el('home'), loading=el('loading'), result=el('result'),
       errorEl=el('error'), history=el('history'),
       loadImg=el('loadImg'), loadMsg=el('loadMsg'), errMsg=el('errMsg'), btnHist=el('btnHist');
 function el(id){ return document.getElementById(id); }
@@ -351,9 +422,16 @@ const loadMsgs=[
 ];
 
 function show(section){
-  [home,loading,result,errorEl,history].forEach(s=> s.classList.add('hidden'));
+  [welcome,home,loading,result,errorEl,history].forEach(s=> s.classList.add('hidden'));
   section.classList.remove('hidden');
   window.scrollTo({top:0, behavior:'smooth'});
+  const nav=document.querySelector('.bottom-nav');
+  if(section===welcome){ if(nav) nav.style.display='none'; return; }
+  if(nav) nav.style.display='';
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  if(section===home){ const b=el('navHome'); if(b) b.classList.add('active'); }
+  else if(section===loading||section===result||section===errorEl){ const b=el('navCam'); if(b) b.classList.add('active'); }
+  else if(section===history){ const b=el('navPlants'); if(b) b.classList.add('active'); }
 }
 function goHome(){
   stopVoice();
@@ -582,27 +660,58 @@ function setupChat(d){
 /* ---------- HISTÓRICO ---------- */
 async function openHistory(){
   show(history);
-  const list=el('histList'); list.innerHTML='<p class="empty">Carregando…</p>';
-  const items=await Store.list();
-  if(!items.length){ list.innerHTML='<p class="empty">Você ainda não analisou nenhuma planta. 🌱</p>'; return; }
-  let html='';
-  items.forEach(it=>{
-    const col=statusColor(it.saude_status);
-    let when='';
-    if(it.createdAt){
-      if(it.createdAt.toDate) when=it.createdAt.toDate().toLocaleDateString('pt-BR');
-      else if(typeof it.createdAt==='number') when=new Date(it.createdAt).toLocaleDateString('pt-BR');
+  const list=el('histList'), searchInput=el('histSearch');
+  list.innerHTML='<p class="empty">Carregando…</p>';
+  let allItems=await Store.list();
+
+  function renderItems(filter){
+    const q=(filter||'').toLowerCase().trim();
+    const filtered=q
+      ? allItems.filter(it=>(it.nome_popular||'').toLowerCase().includes(q)||(it.saude_status||'').toLowerCase().includes(q))
+      : allItems;
+    if(!filtered.length){
+      list.innerHTML='<p class="empty">'+(q?'Nenhuma planta encontrada.':'Você ainda não analisou nenhuma planta.')+'  🌱</p>';
+      return;
     }
-    const thumb=it.thumb||'';
-    html+='<div class="hist-item">';
-    html+= thumb ? '<img src="'+thumb+'" alt="">' : '<div class="res-thumb" style="width:58px;height:58px;display:grid;place-items:center;font-size:26px">🪴</div>';
-    html+='<div><p class="hi-name">'+esc(it.nome_popular||'Planta')+'</p><p class="hi-meta">'+esc(it.saude_status||'')+(when?' · '+when:'')+'</p></div>';
-    html+='<span class="hi-score" style="color:'+col.c+'">'+(parseInt(it.saude_score,10)||0)+'</span></div>';
-  });
-  list.innerHTML=html;
-  list.querySelectorAll('.hist-item').forEach((node,idx)=>{
-    node.addEventListener('click',()=>{ const it=items[idx]; if(it && it.data){ lastThumb=it.thumb||''; renderResult(it.data, it.thumb||''); } });
-  });
+    let html='';
+    filtered.forEach(it=>{
+      const globalIdx=allItems.indexOf(it);
+      const col=statusColor(it.saude_status);
+      let when='';
+      if(it.createdAt){
+        if(it.createdAt.toDate) when=it.createdAt.toDate().toLocaleDateString('pt-BR');
+        else if(typeof it.createdAt==='number') when=new Date(it.createdAt).toLocaleDateString('pt-BR');
+      }
+      const thumb=it.thumb||'';
+      html+='<div class="hist-item" data-idx="'+globalIdx+'">';
+      html+=thumb?'<img src="'+thumb+'" alt="">':'<div style="width:58px;height:58px;background:var(--green-soft);border-radius:12px;display:grid;place-items:center;font-size:26px;flex:none">🪴</div>';
+      html+='<div style="flex:1;min-width:0"><p class="hi-name">'+esc(it.nome_popular||'Planta')+'</p><p class="hi-meta">'+esc(it.saude_status||'')+(when?' · '+when:'')+'</p></div>';
+      html+='<span class="hi-score" style="color:'+col.c+';margin-right:8px">'+(parseInt(it.saude_score,10)||0)+'</span>';
+      html+='<button class="del-btn" data-idx="'+globalIdx+'" aria-label="Excluir" title="Excluir">🗑️</button>';
+      html+='</div>';
+    });
+    list.innerHTML=html;
+    list.querySelectorAll('.hist-item').forEach(node=>{
+      node.addEventListener('click',e=>{
+        if(e.target.closest('.del-btn')) return;
+        const it=allItems[parseInt(node.dataset.idx,10)];
+        if(it&&it.data){ lastThumb=it.thumb||''; renderResult(it.data,it.thumb||''); }
+      });
+    });
+    list.querySelectorAll('.del-btn').forEach(btn=>{
+      btn.addEventListener('click',async e=>{
+        e.stopPropagation();
+        const idx=parseInt(btn.dataset.idx,10);
+        const it=allItems[idx];
+        if(typeof it.createdAt==='number') await Store.delete(it.createdAt);
+        allItems.splice(idx,1);
+        renderItems(searchInput?searchInput.value:'');
+      });
+    });
+  }
+
+  renderItems();
+  if(searchInput){ searchInput.value=''; searchInput.addEventListener('input',()=>renderItems(searchInput.value)); }
 }
 
 // pré-carrega vozes (alguns navegadores carregam de forma assíncrona)
@@ -610,6 +719,31 @@ if('speechSynthesis' in window){ window.speechSynthesis.getVoices(); window.spee
 
 // inicializa Firebase em segundo plano (histórico já funciona no aparelho mesmo sem ele)
 Store.init();
+
+/* ---------- IDENTIFICAÇÃO — primeira vez ---------- */
+function updateGreeting(nome){
+  const g=el('homeGreeting'); if(g&&nome) g.textContent='Oi, '+nome+'! Vamos cuidar da sua plantinha?';
+}
+function startApp(){
+  const inp=el('nameInput'); const nome=(inp?inp.value||'':'').trim();
+  if(!nome){ if(inp) inp.focus(); return; }
+  localStorage.setItem('pv_nome',nome); updateGreeting(nome); show(home);
+}
+const _btnStart=el('btnStart'); if(_btnStart) _btnStart.addEventListener('click',startApp);
+const _nameInput=el('nameInput');
+if(_nameInput) _nameInput.addEventListener('keydown',(e)=>{ if(e.key==='Enter'){e.preventDefault();startApp();} });
+
+/* ---------- BOTTOM NAV ---------- */
+const _navHome=el('navHome'); if(_navHome) _navHome.addEventListener('click',goHome);
+const _navCam=el('navCam'); if(_navCam) _navCam.addEventListener('click',goHome);
+const _navPlants=el('navPlants'); if(_navPlants) _navPlants.addEventListener('click',openHistory);
+
+/* ---------- INIT ---------- */
+(function(){
+  const nomeSalvo=localStorage.getItem('pv_nome');
+  if(nomeSalvo){ updateGreeting(nomeSalvo); show(home); }
+  else{ show(welcome); }
+})();
 </script>
 </body>
 </html>
