@@ -168,6 +168,46 @@
   @media (min-width:680px){ .wrap{padding-top:30px} .leaf-ill{font-size:76px} }
   @media (prefers-reduced-motion:reduce){ .spinner span{animation:none} .btn:active{transform:none} }
 
+  /* ---- DICAS DE FOTO ---- */
+  .photo-tips{display:flex;flex-direction:column;gap:10px}
+  .photo-tip{display:flex;gap:12px;align-items:flex-start;padding:12px 14px;border-radius:14px}
+  .photo-tip.ok{background:var(--green-soft)}
+  .photo-tip.bad{background:#FAF9F4;border:1px solid var(--line)}
+  .photo-tip .pte{font-size:24px;flex:none;line-height:1.3}
+  .photo-tip b{display:block;font-size:16px;margin-bottom:2px}
+  .photo-tip p{margin:0;font-size:15px;color:var(--ink-soft);line-height:1.4}
+
+  /* ---- INFORMAÇÕES BÁSICAS ---- */
+  .info-row{display:flex;gap:14px;align-items:flex-start;padding:12px 0;border-bottom:1px dashed var(--line)}
+  .info-row:last-child{border-bottom:none}
+  .info-row .ie{font-size:24px;flex:none;width:32px;text-align:center;margin-top:2px}
+  .info-row b{display:block;font-size:14px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.4px;font-weight:800}
+  .info-row p{margin:2px 0 0;font-size:16px;line-height:1.4}
+  .tox{display:inline-flex;align-items:center;font-size:14px;font-weight:700;padding:4px 12px;border-radius:999px;margin-top:4px}
+  .tox.safe{background:var(--green-soft);color:var(--green-deep)}
+  .tox.warn{background:var(--amber-soft);color:var(--amber)}
+  .tox.danger{background:var(--coral-soft);color:var(--coral)}
+
+  /* ---- COMPARTILHAR ---- */
+  .btn-share{background:#EAF2FF;color:#1a56c4;border:2px solid #c5d9f8;margin-top:14px;min-height:56px;font-size:18px}
+  .share-toast{position:fixed;bottom:82px;left:50%;transform:translateX(-50%);
+    background:#28271F;color:#fff;padding:12px 24px;border-radius:999px;
+    font-size:16px;z-index:300;opacity:0;pointer-events:none;
+    transition:opacity .3s ease;white-space:nowrap}
+  .share-toast.show{opacity:1}
+
+  /* ---- CÂMERA BLOQUEADA ---- */
+  .cam-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:200;
+    display:flex;align-items:center;justify-content:center;padding:18px}
+  .cam-card{background:#fff;border-radius:22px;padding:26px;max-width:500px;
+    width:100%;box-shadow:0 10px 40px rgba(0,0,0,.2)}
+  .cam-card h3{font-family:'Fraunces',serif;font-weight:600;font-size:22px;
+    color:var(--green-deep);margin:12px 0 8px;text-align:center}
+  .cam-card p{font-size:17px;line-height:1.5;color:var(--ink-soft);margin:0 0 14px}
+  .cam-step{display:flex;gap:12px;align-items:flex-start;margin:8px 0;font-size:16px;line-height:1.45}
+  .cam-step .cn{width:28px;height:28px;border-radius:50%;flex:none;background:var(--green-soft);
+    color:var(--green-deep);display:grid;place-items:center;font-weight:800;font-size:14px}
+
   /* ---- BOAS-VINDAS ---- */
   .name-input{width:100%;border:2px solid var(--line);border-radius:14px;padding:16px;
     font-family:'Nunito',sans-serif;font-size:19px;color:var(--ink);background:#fff;
@@ -234,7 +274,7 @@
 
       <button class="btn btn-primary" id="btnCam" type="button"><span class="ico">📷</span> Tirar foto agora</button>
       <button class="btn btn-secondary" id="btnGal" type="button"><span class="ico">🖼️</span> Escolher foto do celular</button>
-      <button class="btn btn-ghost" id="btnHist" type="button"><span class="ico">🌱</span> Minhas plantas</button>
+      <button class="btn btn-ghost" id="btnHist" type="button"><span class="ico">🌱</span> Meu Jardim</button>
 
       <input type="file" id="fileCam" accept="image/*" capture="environment">
       <input type="file" id="fileGal" accept="image/*">
@@ -247,6 +287,28 @@
         <div class="step"><span class="n">1</span> Tire a foto da planta</div>
         <div class="step"><span class="n">2</span> Espere alguns segundos</div>
         <div class="step"><span class="n">3</span> Veja o cuidado certo para ela</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3 class="sec-title"><span class="e">📸</span> Como tirar uma boa foto</h3>
+      <div class="photo-tips">
+        <div class="photo-tip ok">
+          <span class="pte">✅</span>
+          <div><b>Certinho!</b><p>Planta ocupa boa parte da foto, folha em foco e com boa iluminação natural</p></div>
+        </div>
+        <div class="photo-tip bad">
+          <span class="pte">❌</span>
+          <div><b>Perto demais</b><p>Folha fica borrada e fora de foco — recue um pouco para enquadrar melhor</p></div>
+        </div>
+        <div class="photo-tip bad">
+          <span class="pte">❌</span>
+          <div><b>Longe demais</b><p>Planta fica pequenininha no fundo — chegue mais perto para ver os detalhes</p></div>
+        </div>
+        <div class="photo-tip bad">
+          <span class="pte">❌</span>
+          <div><b>Várias espécies</b><p>Escolha só UMA planta por foto para eu identificar direitinho</p></div>
+        </div>
       </div>
     </div>
   </section>
@@ -269,7 +331,7 @@
   <!-- HISTÓRICO -->
   <section id="history" class="hidden">
     <div class="card">
-      <h3 class="sec-title"><span class="e">🌱</span> Minhas plantas</h3>
+      <h3 class="sec-title"><span class="e">🌱</span> Meu Jardim</h3>
       <div class="search-wrap">
         <span class="search-ico">🔍</span>
         <input id="histSearch" class="search-input" type="search" placeholder="Buscar planta…" autocomplete="off">
@@ -290,6 +352,20 @@
   <footer>EDP Sistemas · Feito com 🌱 e o carinho da vovó</footer>
 </div>
 
+<!-- CÂMERA BLOQUEADA -->
+<div id="cameraHelp" class="cam-overlay hidden">
+  <div class="cam-card">
+    <div style="font-size:52px;text-align:center">📷</div>
+    <h3>Câmera bloqueada</h3>
+    <p>Para tirar fotos das suas plantas, preciso de acesso à câmera. Veja como liberar:</p>
+    <div id="cameraSteps"></div>
+    <button class="btn btn-primary" id="btnCameraHelpClose" type="button" style="margin-top:18px"><span class="ico">✓</span> Entendido</button>
+  </div>
+</div>
+
+<!-- TOAST DE COMPARTILHAMENTO -->
+<div id="shareToast" class="share-toast">✓ Copiado! Cole no WhatsApp ou onde quiser.</div>
+
 <nav class="bottom-nav">
   <button class="nav-btn active" id="navHome" type="button">
     <span>🏠</span>
@@ -301,7 +377,7 @@
   </button>
   <button class="nav-btn" id="navPlants" type="button">
     <span>🌱</span>
-    <small>Minhas plantas</small>
+    <small>Meu Jardim</small>
   </button>
 </nav>
 
@@ -353,7 +429,15 @@ const Store = {
       localStorage.setItem(this.LS_KEY, JSON.stringify(arr));
     }catch(_){}
   },
-  async delete(createdAt){ this._localDelete(createdAt); },
+  async delete(item){
+    if(typeof item.createdAt==='number') this._localDelete(item.createdAt);
+    if(this.enabled && item._firebaseId){
+      try{
+        const { doc, deleteDoc } = await import(FB+"firebase-firestore.js");
+        await deleteDoc(doc(this._db,"analyses",item._firebaseId));
+      }catch(e){ console.warn("Falha ao excluir da nuvem:", e && e.message); }
+    }
+  },
 
   async init(){
     if (JSON.stringify(FIREBASE_CONFIG).includes("COLE_AQUI")) return;
@@ -391,7 +475,7 @@ const Store = {
       try{
         const { collection, query, where, orderBy, limit, getDocs } = await import(FB+"firebase-firestore.js");
         const q = query(collection(this._db,"analyses"), where("uid","==",this._uid), orderBy("createdAt","desc"), limit(30));
-        const snap = await getDocs(q); const out=[]; snap.forEach(d=>out.push(d.data()));
+        const snap = await getDocs(q); const out=[]; snap.forEach(d=>out.push({...d.data(), _firebaseId:d.id}));
         if(out.length) return out;
       }catch(e){ console.warn("Falha ao listar da nuvem (usando o aparelho):", e && e.message); }
     }
@@ -405,7 +489,7 @@ const welcome=el('welcome'), home=el('home'), loading=el('loading'), result=el('
       loadImg=el('loadImg'), loadMsg=el('loadMsg'), errMsg=el('errMsg'), btnHist=el('btnHist');
 function el(id){ return document.getElementById(id); }
 
-el('btnCam').addEventListener('click', ()=> el('fileCam').click());
+el('btnCam').addEventListener('click', checkAndOpenCamera);
 el('btnGal').addEventListener('click', ()=> el('fileGal').click());
 el('fileCam').addEventListener('change', onPick);
 el('fileGal').addEventListener('change', onPick);
@@ -502,6 +586,7 @@ function statusColor(status){
 }
 function confClass(c){ return (c||'média').toLowerCase().replace('é','e'); }
 function diffClass(d){ const s=(d||'').toLowerCase(); if(s.indexOf('fác')>-1||s.indexOf('fac')>-1) return 'facil'; if(s.indexOf('exig')>-1) return 'exigente'; return 'media'; }
+function toxClass(v){ const s=(v||'').toLowerCase(); if(s.includes('não')||s.includes('nao')) return 'safe'; if(s.includes('levem')||s.includes('irrit')) return 'warn'; return 'danger'; }
 
 function renderResult(d, imgSrc){
   stopVoice();
@@ -565,6 +650,17 @@ function renderResult(d, imgSrc){
     html+='</div></div>';
   }
 
+  // INFORMAÇÕES BÁSICAS
+  const info=d.info_basica||{};
+  if(info.toxicidade_humanos||info.toxicidade_pets||info.erva_daninha||info.vida_util){
+    html+='<div class="card"><h3 class="sec-title"><span class="e">ℹ️</span> Informações básicas</h3>';
+    if(info.toxicidade_humanos) html+='<div class="info-row"><span class="ie">👤</span><div><b>Para pessoas</b><span class="tox '+toxClass(info.toxicidade_humanos)+'">'+esc(info.toxicidade_humanos)+'</span></div></div>';
+    if(info.toxicidade_pets) html+='<div class="info-row"><span class="ie">🐾</span><div><b>Para pets</b><span class="tox '+toxClass(info.toxicidade_pets)+'">'+esc(info.toxicidade_pets)+'</span></div></div>';
+    if(info.erva_daninha) html+='<div class="info-row"><span class="ie">🌾</span><div><b>Erva daninha</b><p>'+esc(info.erva_daninha)+'</p></div></div>';
+    if(info.vida_util) html+='<div class="info-row"><span class="ie">📅</span><div><b>Vida útil</b><p>'+esc(info.vida_util)+'</p></div></div>';
+    html+='</div>';
+  }
+
   if(Array.isArray(d.tratamento) && d.tratamento.length){
     html+='<div class="card"><h3 class="sec-title"><span class="e">🧴</span> O que aplicar</h3>';
     d.tratamento.forEach(t=> html+='<div class="treat"><span class="chk">✓</span><p>'+esc(t)+'</p></div>');
@@ -585,7 +681,8 @@ function renderResult(d, imgSrc){
   html+='<button class="chat-send" id="chatSend" type="button" aria-label="Enviar">➤</button></div>';
   html+='<div class="suggest" id="chatSuggest"></div></div>';
 
-  html+='<button class="btn btn-primary" id="btnAgain" type="button" style="margin-top:18px"><span class="ico">📷</span> Analisar outra planta</button>';
+  html+='<button class="btn btn-share" id="btnShare" type="button"><span class="ico">📤</span> Compartilhar</button>';
+  html+='<button class="btn btn-primary" id="btnAgain" type="button" style="margin-top:14px"><span class="ico">📷</span> Analisar outra planta</button>';
   html+='<button class="btn btn-secondary" id="btnHome" type="button"><span class="ico">🏠</span> Voltar ao início</button>';
   html+='<button class="btn btn-ghost" id="btnHistFromResult" type="button"><span class="ico">🌱</span> Ver minhas plantas</button>';
   html+='<p class="disclaimer">As orientações são uma ajuda carinhosa para o dia a dia. Em casos sérios, procure um agrônomo ou floricultura de confiança. 🌷</p>';
@@ -593,6 +690,7 @@ function renderResult(d, imgSrc){
   result.innerHTML=html;
 
   // liga os botões do resultado
+  el('btnShare').addEventListener('click', ()=> shareResult(d, loadImg.src));
   el('btnAgain').addEventListener('click', goHome);
   el('btnHome').addEventListener('click', goHome);
   el('btnHistFromResult').addEventListener('click', openHistory);
@@ -703,7 +801,7 @@ async function openHistory(){
         e.stopPropagation();
         const idx=parseInt(btn.dataset.idx,10);
         const it=allItems[idx];
-        if(typeof it.createdAt==='number') await Store.delete(it.createdAt);
+        await Store.delete(it);
         allItems.splice(idx,1);
         renderItems(searchInput?searchInput.value:'');
       });
@@ -712,6 +810,70 @@ async function openHistory(){
 
   renderItems();
   if(searchInput){ searchInput.value=''; searchInput.addEventListener('input',()=>renderItems(searchInput.value)); }
+}
+
+/* ---------- CÂMERA — verificação de permissão ---------- */
+async function checkAndOpenCamera(){
+  if(navigator.permissions){
+    try{
+      const perm=await navigator.permissions.query({name:'camera'});
+      if(perm.state==='denied'){ showCameraHelp(); return; }
+    }catch(_){ /* API não suportada neste navegador, abre normalmente */ }
+  }
+  el('fileCam').click();
+}
+function showCameraHelp(){
+  const isIOS=/iPad|iPhone|iPod/.test(navigator.userAgent)&&!window.MSStream;
+  const steps=isIOS?[
+    'Abra o app <b>Ajustes</b> do iPhone',
+    'Role para baixo e toque no nome do seu navegador (Safari ou Chrome)',
+    'Toque em <b>Câmera</b> e selecione <b>Permitir</b>',
+    'Volte aqui e tente de novo!'
+  ]:[
+    'Toque no ícone de <b>cadeado 🔒</b> ou <b>câmera 📷</b> na barra de endereço',
+    'Encontre <b>Câmera</b> e escolha <b>Permitir</b>',
+    'Atualize a página e tente de novo!'
+  ];
+  el('cameraSteps').innerHTML=steps.map((s,i)=>'<div class="cam-step"><span class="cn">'+(i+1)+'</span><span>'+s+'</span></div>').join('');
+  el('cameraHelp').classList.remove('hidden');
+}
+el('btnCameraHelpClose').addEventListener('click',()=>el('cameraHelp').classList.add('hidden'));
+
+/* ---------- COMPARTILHAR ---------- */
+function buildShareText(d){
+  const lines=[];
+  lines.push('🌿 '+(d.nome_popular||'Planta')+(d.nome_cientifico?' ('+d.nome_cientifico+')':''));
+  if(d.saude_status) lines.push('💚 Saúde: '+d.saude_status+(d.saude_score?' — '+d.saude_score+'/100':''));
+  if(d.diagnostico) lines.push('📋 '+d.diagnostico);
+  const c=d.cuidados||{};
+  if(c.rega) lines.push('💧 Rega: '+c.rega);
+  if(c.luz) lines.push('☀️ Luz: '+c.luz);
+  const w=d.onde_vive_melhor||{};
+  if(w.local_sugerido) lines.push('🏡 Melhor lugar: '+w.local_sugerido);
+  if(d.sabedoria_vovo) lines.push('\n👵 Dica da Vovó: '+d.sabedoria_vovo);
+  lines.push('\n🌷 Identificado pelo Plantinha da Vovó');
+  return lines.join('\n');
+}
+function showShareToast(){
+  const t=el('shareToast'); t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),3200);
+}
+async function shareResult(d,imgSrc){
+  const text=buildShareText(d);
+  const title=(d.nome_popular||'Planta')+' — Plantinha da Vovó';
+  if(navigator.share){
+    if(imgSrc&&imgSrc.startsWith('data:')&&navigator.canShare){
+      try{
+        const blob=await fetch(imgSrc).then(r=>r.blob());
+        const file=new File([blob],'planta.jpg',{type:'image/jpeg'});
+        if(navigator.canShare({files:[file]})){
+          await navigator.share({title,text,files:[file]}); return;
+        }
+      }catch(_){ /* fallback para texto */ }
+    }
+    try{ await navigator.share({title,text}); return; }catch(_){}
+  }
+  try{ await navigator.clipboard.writeText(text); showShareToast(); }catch(_){}
 }
 
 // pré-carrega vozes (alguns navegadores carregam de forma assíncrona)
