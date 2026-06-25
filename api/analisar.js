@@ -63,6 +63,12 @@ const SYSTEM_ANALISE =
   '  },\n' +
   '  "tratamento": [ "o que aplicar / fazer, passo a passo e bem prático" ],\n' +
   '  "sabedoria_vovo": "uma receita/dica caseira tradicional, segura, escrita com carinho",\n' +
+  '  "info_basica": {\n' +
+  '     "toxicidade_humanos": "não tóxica | levemente tóxica (irritante) | moderadamente tóxica | altamente tóxica",\n' +
+  '     "toxicidade_pets": "não tóxica para pets | levemente tóxica para pets | moderadamente tóxica para pets | altamente tóxica para pets",\n' +
+  '     "erva_daninha": "não apresenta risco | pode se espalhar com facilidade | altamente invasiva",\n' +
+  '     "vida_util": "ex.: planta perene, vive muitos anos | planta anual, dura uma temporada | arbusto de vida longa"\n' +
+  '  },\n' +
   '  "dica": "uma dica carinhosa e fácil de lembrar"\n' +
   "}\n" +
   "Regras: saude_score é número de 0 a 100. Se a imagem NÃO for uma planta, retorne {\"e_planta\": false} e nada mais. " +
