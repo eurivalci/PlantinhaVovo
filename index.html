@@ -17,6 +17,9 @@
     --rose:#B85C7A; --rose-soft:#F7E7EC;
     --ink:#28271F; --ink-soft:#5C5A4F; --line:#E5E1D6;
     --shadow:0 6px 22px rgba(33,78,42,.10);
+    --surface-alt:#FAF9F4; --care-text:#3c5a3f; --vovo-text:#5a3340; --vovo-border:#e3b9c6;
+    --input-bg:#fff;
+    --share-bg:#EAF2FF; --share-color:#1a56c4; --share-border:#c5d9f8;
   }
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
   html,body{margin:0;padding:0}
@@ -24,14 +27,9 @@
     font-size:19px;line-height:1.5;-webkit-font-smoothing:antialiased;min-height:100vh}
   .wrap{max-width:600px;margin:0 auto;padding:18px 18px 110px}
 
-  .topbar{display:flex;flex-direction:column;align-items:center;gap:6px;padding:14px 6px 8px}
-  .topbar-row{display:flex;justify-content:space-between;align-items:center;width:100%}
-  .logo{width:72px;height:72px;border-radius:20px;flex:none;overflow:hidden;
-    box-shadow:var(--shadow);background:var(--bg)}
-  .logo img{width:100%;height:100%;object-fit:contain;display:block}
-  .topbar h1{font-family:'Fraunces',serif;font-weight:700;font-size:26px;margin:0;
-    line-height:1.05;color:var(--green-deep);text-align:center}
-  .topbar p{margin:2px 0 0;font-size:14px;color:var(--ink-soft);text-align:center}
+  .topbar{display:flex;align-items:center;gap:13px;padding:14px 6px 10px}
+  .topbar h1{font-family:'Fraunces',serif;font-weight:700;font-size:25px;margin:0;line-height:1.05;color:var(--green-deep)}
+  .topbar p{margin:3px 0 0;font-size:14.5px;color:var(--ink-soft)}
 
   .card{background:var(--surface);border:1px solid var(--line);border-radius:22px;
     box-shadow:var(--shadow);padding:22px;margin-top:18px}
@@ -94,7 +92,7 @@
   .sec-title .e{font-size:24px}
 
   .problem{display:flex;gap:12px;align-items:flex-start;padding:14px;border-radius:14px;
-    background:#FAF9F4;border:1px solid var(--line);margin-bottom:10px}
+    background:var(--surface-alt);border:1px solid var(--line);margin-bottom:10px}
   .problem .dot{width:14px;height:14px;border-radius:50%;flex:none;margin-top:5px}
   .problem b{display:block;font-size:18px;margin-bottom:2px}
   .problem p{margin:0;font-size:16px;color:var(--ink-soft)}
@@ -116,7 +114,7 @@
   .care{background:var(--green-soft);border-radius:16px;padding:14px}
   .care .ce{font-size:28px;line-height:1}
   .care h4{margin:8px 0 4px;font-size:16px;font-weight:800;color:var(--green-deep)}
-  .care p{margin:0;font-size:15px;color:#3c5a3f;line-height:1.4}
+  .care p{margin:0;font-size:15px;color:var(--care-text);line-height:1.4}
 
   .treat{display:flex;gap:12px;align-items:flex-start;padding:13px 0;border-bottom:1px dashed var(--line)}
   .treat:last-child{border-bottom:none}
@@ -125,11 +123,11 @@
   .treat p{margin:0;font-size:17px;line-height:1.4}
 
   /* SABEDORIA DA VOVÓ — cartãozinho de receita */
-  .vovo-card{background:var(--rose-soft);border:2px dashed #e3b9c6;border-radius:20px;padding:20px}
+  .vovo-card{background:var(--rose-soft);border:2px dashed var(--vovo-border);border-radius:20px;padding:20px}
   .vovo-head{display:flex;align-items:center;gap:10px;margin-bottom:8px}
   .vovo-head .ve{font-size:30px}
   .vovo-head h3{font-family:'Fraunces',serif;font-style:italic;font-weight:600;font-size:21px;margin:0;color:var(--rose)}
-  .vovo-card p{margin:0;font-size:18px;line-height:1.55;color:#5a3340}
+  .vovo-card p{margin:0;font-size:18px;line-height:1.55;color:var(--vovo-text)}
 
   .tip{background:var(--amber-soft);border-radius:16px;padding:16px 18px;font-size:17px;line-height:1.5;display:flex;gap:12px}
   .tip .te{font-size:26px;flex:none}
@@ -142,13 +140,13 @@
   .bubble.vovo.typing{color:var(--ink-soft);font-style:italic}
   .chat-row{display:flex;gap:10px}
   .chat-row input{flex:1;border:2px solid var(--line);border-radius:14px;padding:14px 16px;
-    font-family:'Nunito',sans-serif;font-size:17px;background:#fff;color:var(--ink)}
+    font-family:'Nunito',sans-serif;font-size:17px;background:var(--input-bg);color:var(--ink)}
   .chat-row input:focus{outline:none;border-color:var(--green)}
   .chat-send{flex:none;width:58px;border:none;border-radius:14px;background:var(--green);color:#fff;
     font-size:22px;cursor:pointer}
   .chat-send:disabled{opacity:.5}
   .suggest{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
-  .chip{background:#fff;border:2px solid var(--line);border-radius:999px;padding:9px 14px;font-size:15px;
+  .chip{background:var(--input-bg);border:2px solid var(--line);border-radius:999px;padding:9px 14px;font-size:15px;
     font-weight:700;color:var(--green-deep);cursor:pointer}
   .chip:active{transform:scale(.97)}
 
@@ -156,7 +154,7 @@
   .errbox{background:var(--coral-soft);border:1px solid #f0c4bd;border-radius:16px;padding:18px;color:#9c3a30;font-size:17px;line-height:1.5}
 
   .hist-item{display:flex;gap:14px;align-items:center;padding:12px;border-radius:14px;
-    border:1px solid var(--line);background:#FAF9F4;margin-bottom:10px;cursor:pointer}
+    border:1px solid var(--line);background:var(--surface-alt);margin-bottom:10px;cursor:pointer}
   .hist-item:active{transform:scale(.99)}
   .hist-item img{width:58px;height:58px;border-radius:12px;object-fit:cover;flex:none;border:1px solid var(--line)}
   .hist-item .hi-name{font-weight:800;font-size:17px;margin:0;color:var(--green-deep)}
@@ -172,7 +170,7 @@
 
   /* ---- TAMANHO DE FONTE ---- */
   .font-ctrl{display:flex;flex-direction:column;gap:5px;flex:none}
-  .font-btn{border:2px solid var(--line);border-radius:10px;background:#fff;color:var(--ink-soft);
+  .font-btn{border:2px solid var(--line);border-radius:10px;background:var(--input-bg);color:var(--ink-soft);
     cursor:pointer;font-family:'Nunito',sans-serif;font-weight:800;padding:4px 8px;
     line-height:1;min-width:38px;text-align:center;transition:all .15s ease}
   .font-btn.fn{font-size:13px} .font-btn.fx{font-size:16px}
@@ -248,9 +246,9 @@
   .tox.danger{background:var(--coral-soft);color:var(--coral)}
 
   /* ---- COMPARTILHAR ---- */
-  .btn-share{background:#EAF2FF;color:#1a56c4;border:2px solid #c5d9f8;margin-top:14px;min-height:56px;font-size:18px}
+  .btn-share{background:var(--share-bg);color:var(--share-color);border:2px solid var(--share-border);margin-top:14px;min-height:56px;font-size:18px}
   .share-toast{position:fixed;bottom:82px;left:50%;transform:translateX(-50%);
-    background:#28271F;color:#fff;padding:12px 24px;border-radius:999px;
+    background:var(--ink);color:var(--bg);padding:12px 24px;border-radius:999px;
     font-size:16px;z-index:300;opacity:0;pointer-events:none;
     transition:opacity .3s ease;white-space:nowrap}
   .share-toast.show{opacity:1}
@@ -258,7 +256,7 @@
   /* ---- CÂMERA BLOQUEADA ---- */
   .cam-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:200;
     display:flex;align-items:center;justify-content:center;padding:18px}
-  .cam-card{background:#fff;border-radius:22px;padding:26px;max-width:500px;
+  .cam-card{background:var(--surface);border-radius:22px;padding:26px;max-width:500px;
     width:100%;box-shadow:0 10px 40px rgba(0,0,0,.2)}
   .cam-card h3{font-family:'Fraunces',serif;font-weight:600;font-size:22px;
     color:var(--green-deep);margin:12px 0 8px;text-align:center}
@@ -269,7 +267,7 @@
 
   /* ---- BOAS-VINDAS ---- */
   .name-input{width:100%;border:2px solid var(--line);border-radius:14px;padding:16px;
-    font-family:'Nunito',sans-serif;font-size:19px;color:var(--ink);background:#fff;
+    font-family:'Nunito',sans-serif;font-size:19px;color:var(--ink);background:var(--input-bg);
     margin-bottom:14px;box-sizing:border-box}
   .name-input:focus{outline:none;border-color:var(--green)}
 
@@ -277,7 +275,7 @@
   .search-wrap{position:relative;margin-bottom:14px}
   .search-input{width:100%;border:2px solid var(--line);border-radius:14px;
     padding:13px 16px 13px 44px;font-family:'Nunito',sans-serif;font-size:17px;
-    color:var(--ink);background:#fff;box-sizing:border-box}
+    color:var(--ink);background:var(--input-bg);box-sizing:border-box}
   .search-input:focus{outline:none;border-color:var(--green)}
   .search-ico{position:absolute;left:14px;top:50%;transform:translateY(-50%);
     font-size:20px;pointer-events:none}
@@ -289,7 +287,7 @@
   .del-btn:active{transform:scale(.93)}
 
   /* ---- BARRA DE NAVEGAÇÃO INFERIOR ---- */
-  .bottom-nav{position:fixed;bottom:0;left:0;right:0;background:#fff;
+  .bottom-nav{position:fixed;bottom:0;left:0;right:0;background:var(--surface);
     border-top:1px solid var(--line);display:flex;justify-content:space-around;
     align-items:stretch;padding-bottom:env(safe-area-inset-bottom);z-index:100;
     box-shadow:0 -4px 16px rgba(33,78,42,.08)}
@@ -300,22 +298,51 @@
   .nav-btn span{font-size:24px;line-height:1}
   .nav-btn.active{color:var(--green)}
   .nav-btn:active{transform:scale(.94)}
+
+  /* ---- MODO ESCURO ---- */
+  body.dark-mode{
+    --bg:#161B17; --surface:#21271F;
+    --green:#5BAF6F; --green-soft:#1A2E1C; --green-deep:#7FCA95;
+    --amber:#E2A83A; --amber-soft:#2A1E08;
+    --coral:#E07060; --coral-soft:#2A120E;
+    --rose:#D080A0; --rose-soft:#2A1020;
+    --ink:#E5E2D8; --ink-soft:#95928A; --line:#363B34;
+    --shadow:0 6px 22px rgba(0,0,0,.40);
+    --surface-alt:#1D2320; --care-text:#7FCA95; --vovo-text:#D080A0; --vovo-border:#5A2A40;
+    --input-bg:#1D2320;
+    --share-bg:#0D2040; --share-color:#7AABF0; --share-border:#1A3A60;
+  }
+  body.dark-mode .gauge circle:first-child{stroke:var(--line)}
+
+  /* ---- FILTROS DO HISTÓRICO ---- */
+  .filter-bar{display:flex;gap:8px;overflow-x:auto;margin-bottom:12px;padding-bottom:2px;
+    -webkit-overflow-scrolling:touch;scrollbar-width:none}
+  .filter-bar::-webkit-scrollbar{display:none}
+  .filter-chip{border:2px solid var(--line);border-radius:999px;padding:8px 14px;font-size:14px;
+    font-weight:700;color:var(--ink-soft);background:var(--surface);cursor:pointer;white-space:nowrap;
+    font-family:'Nunito',sans-serif;transition:all .15s ease;flex:none}
+  .filter-chip.active{border-color:var(--green);color:var(--green);background:var(--green-soft)}
+  .filter-chip:active{transform:scale(.96)}
+
+  /* ---- FAVORITAR ---- */
+  .fav-btn{flex:none;background:transparent;border:none;font-size:22px;padding:6px 4px;cursor:pointer;
+    line-height:1;border-radius:8px;transition:transform .15s ease}
+  .fav-btn:active{transform:scale(.85)}
+  body.font-xl .filter-chip{font-size:16px}
 </style>
 </head>
 <body>
 <div class="wrap" role="main">
 
   <div class="topbar">
-    <div class="topbar-row">
-      <div class="logo"><img src="logo.png" alt="Plantinha da Vovó"></div>
-      <div class="font-ctrl" aria-label="Tamanho do texto">
-        <button class="font-btn fn" id="fontNormal" type="button" aria-label="Texto normal">A</button>
-        <button class="font-btn fx" id="fontLarge" type="button" aria-label="Texto maior">A+</button>
-      </div>
-    </div>
-    <div>
+    <div style="flex:1">
       <h1>Plantinha da Vovó</h1>
       <p>A sabedoria da vovó com olhar de especialista 🌿</p>
+    </div>
+    <div class="font-ctrl" aria-label="Tamanho do texto">
+      <button class="font-btn fn" id="fontNormal" type="button" aria-label="Texto normal">A</button>
+      <button class="font-btn fx" id="fontLarge" type="button" aria-label="Texto maior">A+</button>
+      <button class="font-btn" id="darkToggle" type="button" aria-label="Alternar modo escuro" style="font-size:15px;padding:4px 7px">🌙</button>
     </div>
   </div>
 
@@ -333,7 +360,7 @@
   <!-- TELA INICIAL -->
   <section id="home" class="hidden">
     <div class="card hero">
-      <div class="leaf-ill">🪴</div>
+      <div style="margin:8px auto 16px;width:200px"><img src="logo.png" alt="Plantinha da Vovó" style="width:100%;height:auto;display:block"></div>
       <h2 id="homeGreeting">Oi, meu bem! Vamos cuidar da sua plantinha?</h2>
       <p>Tire uma foto bem de perto das folhas. Eu digo qual é a planta, se está saudável, onde ela vive melhor e o que fazer para cuidar dela.</p>
 
@@ -400,6 +427,13 @@
       <div class="search-wrap">
         <span class="search-ico">🔍</span>
         <input id="histSearch" class="search-input" type="search" placeholder="Buscar planta…" autocomplete="off">
+      </div>
+      <div class="filter-bar" id="histFilters">
+        <button class="filter-chip active" data-filter="all" type="button">Todas</button>
+        <button class="filter-chip" data-filter="fav" type="button">⭐ Favoritas</button>
+        <button class="filter-chip" data-filter="saud" type="button">💚 Saudável</button>
+        <button class="filter-chip" data-filter="aten" type="button">⚠️ Atenção</button>
+        <button class="filter-chip" data-filter="prec" type="button">🚨 Precisa</button>
       </div>
       <div id="histList"><p class="empty">Carregando…</p></div>
       <button class="btn btn-secondary" id="btnHistBack" type="button" style="margin-top:16px"><span class="ico">←</span> Voltar</button>
@@ -546,6 +580,15 @@ const Store = {
     }
     return this._localList();          // fallback: histórico do aparelho
   }
+};
+
+/* ---- FAVORITOS ---- */
+const Favs={
+  LS_KEY:'pv_favoritos', _set:null,
+  _load(){ if(!this._set){ try{ const r=localStorage.getItem(this.LS_KEY); this._set=new Set(r?JSON.parse(r):[]); }catch(_){ this._set=new Set(); } } return this._set; },
+  key(it){ return it._firebaseId||String(it.createdAt); },
+  has(it){ return this._load().has(this.key(it)); },
+  toggle(it){ const s=this._load(),k=this.key(it); if(s.has(k)) s.delete(k); else s.add(k); try{ localStorage.setItem(this.LS_KEY,JSON.stringify([...s])); }catch(_){} return s.has(k); }
 };
 
 /* ============================ APP ============================ */
@@ -757,7 +800,7 @@ function renderResult(d, imgSrc){
   setupCollapsibles(result);
 
   // liga os botões do resultado
-  el('btnShare').addEventListener('click', ()=> shareResult(d, loadImg.src));
+  el('btnShare').addEventListener('click', ()=> shareResult(d, imgSrc));
   el('btnAgain').addEventListener('click', goHome);
   el('btnHome').addEventListener('click', goHome);
   el('btnHistFromResult').addEventListener('click', openHistory);
@@ -828,20 +871,31 @@ async function openHistory(){
   const list=el('histList'), searchInput=el('histSearch');
   list.innerHTML='<p class="empty">Carregando…</p>';
   let allItems=await Store.list();
+  let currentFilter='all';
 
-  function renderItems(filter){
-    const q=(filter||'').toLowerCase().trim();
-    const filtered=q
-      ? allItems.filter(it=>(it.nome_popular||'').toLowerCase().includes(q)||(it.saude_status||'').toLowerCase().includes(q))
-      : allItems;
+  // reset chips ao abrir
+  document.querySelectorAll('#histFilters .filter-chip').forEach(b=>b.classList.toggle('active',b.dataset.filter==='all'));
+
+  function renderItems(){
+    const q=(searchInput?searchInput.value:'').toLowerCase().trim();
+    let filtered=allItems;
+    if(currentFilter==='fav') filtered=filtered.filter(it=>Favs.has(it));
+    else if(currentFilter==='saud') filtered=filtered.filter(it=>(it.saude_status||'').toLowerCase().includes('saud'));
+    else if(currentFilter==='aten') filtered=filtered.filter(it=>(it.saude_status||'').toLowerCase().includes('aten'));
+    else if(currentFilter==='prec') filtered=filtered.filter(it=>(it.saude_status||'').toLowerCase().includes('prec'));
+    if(q) filtered=filtered.filter(it=>(it.nome_popular||'').toLowerCase().includes(q)||(it.saude_status||'').toLowerCase().includes(q));
+    // favoritas sempre primeiro
+    filtered=[...filtered].sort((a,b)=>(Favs.has(b)?1:0)-(Favs.has(a)?1:0));
+
     if(!filtered.length){
-      list.innerHTML='<p class="empty">'+(q?'Nenhuma planta encontrada.':'Você ainda não analisou nenhuma planta.')+'  🌱</p>';
+      list.innerHTML='<p class="empty">'+(q||currentFilter!=='all'?'Nenhuma planta encontrada.':'Você ainda não analisou nenhuma planta.')+'  🌱</p>';
       return;
     }
     let html='';
     filtered.forEach(it=>{
       const globalIdx=allItems.indexOf(it);
       const col=statusColor(it.saude_status);
+      const fav=Favs.has(it);
       let when='';
       if(it.createdAt){
         if(it.createdAt.toDate) when=it.createdAt.toDate().toLocaleDateString('pt-BR');
@@ -851,32 +905,50 @@ async function openHistory(){
       html+='<div class="hist-item" data-idx="'+globalIdx+'">';
       html+=thumb?'<img src="'+thumb+'" alt="">':'<div style="width:58px;height:58px;background:var(--green-soft);border-radius:12px;display:grid;place-items:center;font-size:26px;flex:none">🪴</div>';
       html+='<div style="flex:1;min-width:0"><p class="hi-name">'+esc(it.nome_popular||'Planta')+'</p><p class="hi-meta">'+esc(it.saude_status||'')+(when?' · '+when:'')+'</p></div>';
-      html+='<span class="hi-score" style="color:'+col.c+';margin-right:8px">'+(parseInt(it.saude_score,10)||0)+'</span>';
+      html+='<span class="hi-score" style="color:'+col.c+';margin-right:4px">'+(parseInt(it.saude_score,10)||0)+'</span>';
+      html+='<button class="fav-btn" data-idx="'+globalIdx+'" aria-label="'+(fav?'Desfavoritar':'Favoritar')+'">'+(fav?'⭐':'☆')+'</button>';
       html+='<button class="del-btn" data-idx="'+globalIdx+'" aria-label="Excluir" title="Excluir">🗑️</button>';
       html+='</div>';
     });
     list.innerHTML=html;
+
     list.querySelectorAll('.hist-item').forEach(node=>{
       node.addEventListener('click',e=>{
-        if(e.target.closest('.del-btn')) return;
+        if(e.target.closest('.del-btn')||e.target.closest('.fav-btn')) return;
         const it=allItems[parseInt(node.dataset.idx,10)];
         if(it&&it.data){ lastThumb=it.thumb||''; renderResult(it.data,it.thumb||''); }
+      });
+    });
+    list.querySelectorAll('.fav-btn').forEach(btn=>{
+      btn.addEventListener('click',e=>{
+        e.stopPropagation();
+        Favs.toggle(allItems[parseInt(btn.dataset.idx,10)]);
+        renderItems();
       });
     });
     list.querySelectorAll('.del-btn').forEach(btn=>{
       btn.addEventListener('click',async e=>{
         e.stopPropagation();
         const idx=parseInt(btn.dataset.idx,10);
-        const it=allItems[idx];
-        await Store.delete(it);
+        await Store.delete(allItems[idx]);
         allItems.splice(idx,1);
-        renderItems(searchInput?searchInput.value:'');
+        renderItems();
       });
     });
   }
 
+  // delegação de evento nos filtros (substitui handler anterior)
+  const filtersEl=el('histFilters');
+  if(filtersEl) filtersEl.onclick=e=>{
+    const chip=e.target.closest('.filter-chip');
+    if(!chip) return;
+    currentFilter=chip.dataset.filter;
+    filtersEl.querySelectorAll('.filter-chip').forEach(b=>b.classList.toggle('active',b===chip));
+    renderItems();
+  };
+
   renderItems();
-  if(searchInput){ searchInput.value=''; searchInput.addEventListener('input',()=>renderItems(searchInput.value)); }
+  if(searchInput){ searchInput.value=''; searchInput.oninput=()=>renderItems(); }
 }
 
 /* ---------- SEÇÕES RECOLHÍVEIS ---------- */
@@ -942,6 +1014,23 @@ function applyFont(size){
 el('fontNormal') && el('fontNormal').addEventListener('click',()=>applyFont('normal'));
 el('fontLarge') && el('fontLarge').addEventListener('click',()=>applyFont('xl'));
 applyFont(localStorage.getItem('pv_font')||'normal');
+
+/* ---------- MODO ESCURO ---------- */
+function applyDark(pref){
+  const sys=window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const dark=pref==='dark'||(pref!=='light'&&sys);
+  document.body.classList.toggle('dark-mode',dark);
+  const btn=el('darkToggle'); if(btn) btn.textContent=dark?'☀️':'🌙';
+  const meta=document.querySelector('meta[name="theme-color"]'); if(meta) meta.content=dark?'#161B17':'#2F6B3C';
+  localStorage.setItem('pv_dark',pref||'auto');
+}
+el('darkToggle')&&el('darkToggle').addEventListener('click',()=>{
+  applyDark(document.body.classList.contains('dark-mode')?'light':'dark');
+});
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{
+  if((localStorage.getItem('pv_dark')||'auto')==='auto') applyDark('auto');
+});
+applyDark(localStorage.getItem('pv_dark')||'auto');
 
 /* ---------- CÂMERA — verificação de permissão ---------- */
 function checkAndOpenCamera(){
