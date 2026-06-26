@@ -153,13 +153,17 @@
   .disclaimer{text-align:center;font-size:13.5px;color:var(--ink-soft);margin-top:18px;line-height:1.5;padding:0 6px}
   .errbox{background:var(--coral-soft);border:1px solid #f0c4bd;border-radius:16px;padding:18px;color:#9c3a30;font-size:17px;line-height:1.5}
 
-  .hist-item{display:flex;gap:14px;align-items:center;padding:12px;border-radius:14px;
+  .hist-item{display:flex;gap:12px;align-items:center;padding:13px;border-radius:14px;
     border:1px solid var(--line);background:var(--surface-alt);margin-bottom:10px;cursor:pointer}
   .hist-item:active{transform:scale(.99)}
   .hist-item img{width:58px;height:58px;border-radius:12px;object-fit:cover;flex:none;border:1px solid var(--line)}
-  .hist-item .hi-name{font-weight:800;font-size:17px;margin:0;color:var(--green-deep)}
-  .hist-item .hi-meta{margin:2px 0 0;font-size:14px;color:var(--ink-soft)}
-  .hist-item .hi-score{margin-left:auto;font-family:'Fraunces',serif;font-weight:700;font-size:20px;flex:none}
+  .hi-info{flex:1;min-width:0}
+  .hi-top{display:flex;align-items:center;gap:6px;min-width:0}
+  .hi-name{flex:1;min-width:0;font-weight:800;font-size:17px;margin:0;color:var(--green-deep);
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .hi-actions{display:flex;gap:4px;flex:none}
+  .hi-meta{margin:5px 0 0;font-size:14px;color:var(--ink-soft);
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .empty{text-align:center;color:var(--ink-soft);font-size:16px;padding:10px 0}
 
   .hidden{display:none !important}
@@ -269,6 +273,13 @@
   .cam-step .cn{width:28px;height:28px;border-radius:50%;flex:none;background:var(--green-soft);
     color:var(--green-deep);display:grid;place-items:center;font-weight:800;font-size:14px}
 
+  /* ---- AVISO NAVEGADOR INTERNO ---- */
+  .browser-warn{background:var(--amber-soft);border-bottom:2px solid var(--amber);
+    padding:13px 18px;font-size:15px;line-height:1.5;display:flex;gap:12px;align-items:flex-start}
+  .browser-warn b{display:block;margin-bottom:2px;font-size:16px}
+  .bwarn-close{flex:none;background:none;border:none;font-size:20px;cursor:pointer;
+    color:var(--amber);padding:0 2px;line-height:1;margin-top:2px}
+
   /* ---- BOAS-VINDAS ---- */
   .name-input{width:100%;border:2px solid var(--line);border-radius:14px;padding:16px;
     font-family:'Nunito',sans-serif;font-size:19px;color:var(--ink);background:var(--input-bg);
@@ -336,6 +347,11 @@
 </style>
 </head>
 <body>
+<div id="browserWarn" class="browser-warn hidden" role="alert">
+  <span style="font-size:22px;flex:none">⚠️</span>
+  <div style="flex:1"><b>Abra no Safari ou Chrome</b>Você está em um navegador interno (WhatsApp, iMessage…). Seus dados <b>não serão salvos</b> entre sessões. Copie o link e abra no navegador do celular.</div>
+  <button id="btnWarnClose" class="bwarn-close" aria-label="Fechar aviso">✕</button>
+</div>
 <div class="wrap" role="main">
 
   <div class="topbar">
@@ -355,9 +371,10 @@
     <div class="card hero" style="text-align:center">
       <div style="margin:6px auto 18px;width:160px"><img src="logo.png" alt="Plantinha da Vovó" class="app-logo" style="width:100%;height:auto;display:block"></div>
       <h2 style="font-family:'Fraunces',serif;font-weight:600;font-size:26px;color:var(--green-deep);margin:0 0 10px;line-height:1.2">Bem-vinda ao Plantinha da Vovó!</h2>
-      <p style="color:var(--ink-soft);margin:0 0 22px;font-size:18px;line-height:1.5">Como você gostaria de ser chamada?</p>
+      <p style="color:var(--ink-soft);margin:0 0 18px;font-size:18px;line-height:1.5">Como você gostaria de ser chamada? <span style="font-size:15px">(opcional)</span></p>
       <input id="nameInput" class="name-input" type="text" placeholder="Seu nome ou apelido…" autocomplete="given-name" maxlength="30">
       <button class="btn btn-primary" id="btnStart" type="button"><span class="ico">🌿</span> Começar</button>
+      <button class="btn btn-ghost" id="btnSkip" type="button" style="margin-top:10px;min-height:52px;font-size:17px">Entrar sem nome</button>
     </div>
   </section>
 
@@ -917,12 +934,18 @@ async function openHistory(){
         else if(typeof it.createdAt==='number') when=new Date(it.createdAt).toLocaleDateString('pt-BR');
       }
       const thumb=it.thumb||'';
+      const score=parseInt(it.saude_score,10)||0;
       html+='<div class="hist-item" data-idx="'+globalIdx+'">';
       html+=thumb?'<img src="'+thumb+'" alt="">':'<div style="width:58px;height:58px;background:var(--green-soft);border-radius:12px;display:grid;place-items:center;font-size:26px;flex:none">🪴</div>';
-      html+='<div style="flex:1;min-width:0"><p class="hi-name">'+esc(it.nome_popular||'Planta')+'</p><p class="hi-meta">'+esc(it.saude_status||'')+(when?' · '+when:'')+'</p></div>';
-      html+='<span class="hi-score" style="color:'+col.c+';margin-right:4px">'+(parseInt(it.saude_score,10)||0)+'</span>';
+      html+='<div class="hi-info">';
+      html+='<div class="hi-top">';
+      html+='<p class="hi-name">'+esc(it.nome_popular||'Planta')+'</p>';
+      html+='<div class="hi-actions">';
       html+='<button class="fav-btn" data-idx="'+globalIdx+'" aria-label="'+(fav?'Desfavoritar':'Favoritar')+'">'+(fav?'⭐':'☆')+'</button>';
-      html+='<button class="del-btn" data-idx="'+globalIdx+'" aria-label="Excluir" title="Excluir">🗑️</button>';
+      html+='<button class="del-btn" data-idx="'+globalIdx+'" aria-label="Excluir">🗑️</button>';
+      html+='</div></div>';
+      html+='<p class="hi-meta"><span style="color:'+col.c+';font-weight:700">'+esc(it.saude_status||'')+'</span>'+(score?' · '+score+'/100':'')+(when?' · '+when:'')+'</p>';
+      html+='</div>';
       html+='</div>';
     });
     list.innerHTML=html;
@@ -1122,27 +1145,49 @@ Store.init();
 
 /* ---------- IDENTIFICAÇÃO — primeira vez ---------- */
 function updateGreeting(nome){
-  const g=el('homeGreeting'); if(g&&nome) g.textContent='Oi, '+nome+'! Vamos cuidar da sua plantinha?';
+  const g=el('homeGreeting');
+  if(g) g.textContent=nome?'Oi, '+nome+'! Vamos cuidar da sua plantinha?':'Oi, meu bem! Vamos cuidar da sua plantinha?';
 }
 function startApp(){
-  const inp=el('nameInput'); const nome=(inp?inp.value||'':'').trim();
-  if(!nome){ if(inp) inp.focus(); return; }
-  localStorage.setItem('pv_nome',nome); updateGreeting(nome); show(home);
+  const inp=el('nameInput');
+  const nome=(inp?inp.value||'':'').trim();
+  try{ localStorage.setItem('pv_nome', nome); }catch(_){}
+  updateGreeting(nome);
+  show(home);
 }
-const _btnStart=el('btnStart'); if(_btnStart) _btnStart.addEventListener('click',startApp);
-const _nameInput=el('nameInput');
-if(_nameInput) _nameInput.addEventListener('keydown',(e)=>{ if(e.key==='Enter'){e.preventDefault();startApp();} });
+el('btnStart')&&el('btnStart').addEventListener('click',startApp);
+el('btnSkip')&&el('btnSkip').addEventListener('click',startApp);
+el('nameInput')&&el('nameInput').addEventListener('keydown',(e)=>{ if(e.key==='Enter'){e.preventDefault();startApp();} });
 
 /* ---------- BOTTOM NAV ---------- */
-const _navHome=el('navHome'); if(_navHome) _navHome.addEventListener('click',goHome);
-const _navCam=el('navCam'); if(_navCam) _navCam.addEventListener('click',goHome);
-const _navPlants=el('navPlants'); if(_navPlants) _navPlants.addEventListener('click',openHistory);
+el('navHome')&&el('navHome').addEventListener('click',goHome);
+el('navCam')&&el('navCam').addEventListener('click',goHome);
+el('navPlants')&&el('navPlants').addEventListener('click',openHistory);
+
+/* ---------- AVISO NAVEGADOR INTERNO ---------- */
+(function(){
+  const ua=navigator.userAgent||'';
+  const inApp=/FBAN|FBAV|Instagram|Line\/|TikTok|MicroMessenger|GSA|CriOS/.test(ua)
+    || (/iPhone|iPad/.test(ua) && /AppleWebKit/.test(ua) && !/Safari/.test(ua));
+  if(inApp && !sessionStorage.getItem('pv_warn')){
+    const w=el('browserWarn'); if(w) w.classList.remove('hidden');
+    el('btnWarnClose')&&el('btnWarnClose').addEventListener('click',()=>{
+      el('browserWarn').classList.add('hidden');
+      sessionStorage.setItem('pv_warn','1');
+    });
+  }
+})();
 
 /* ---------- INIT ---------- */
 (function(){
   const nomeSalvo=localStorage.getItem('pv_nome');
-  if(nomeSalvo){ updateGreeting(nomeSalvo); show(home); }
-  else{ show(welcome); }
+  // nomeSalvo===null → nunca visitou; "" ou nome → já visitou (mesmo sem nome)
+  if(nomeSalvo !== null){
+    updateGreeting(nomeSalvo);
+    show(home);
+  } else {
+    show(welcome);
+  }
 })();
 </script>
 </body>
