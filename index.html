@@ -24,12 +24,14 @@
     font-size:19px;line-height:1.5;-webkit-font-smoothing:antialiased;min-height:100vh}
   .wrap{max-width:600px;margin:0 auto;padding:18px 18px 110px}
 
-  .topbar{display:flex;align-items:center;gap:13px;padding:14px 6px 6px}
-  .logo{width:80px;height:80px;border-radius:22px;flex:none;overflow:hidden;
+  .topbar{display:flex;flex-direction:column;align-items:center;gap:6px;padding:14px 6px 8px}
+  .topbar-row{display:flex;justify-content:space-between;align-items:center;width:100%}
+  .logo{width:72px;height:72px;border-radius:20px;flex:none;overflow:hidden;
     box-shadow:var(--shadow);background:var(--bg)}
   .logo img{width:100%;height:100%;object-fit:contain;display:block}
-  .topbar h1{font-family:'Fraunces',serif;font-weight:700;font-size:25px;margin:0;line-height:1.05;color:var(--green-deep)}
-  .topbar p{margin:3px 0 0;font-size:14.5px;color:var(--ink-soft)}
+  .topbar h1{font-family:'Fraunces',serif;font-weight:700;font-size:26px;margin:0;
+    line-height:1.05;color:var(--green-deep);text-align:center}
+  .topbar p{margin:2px 0 0;font-size:14px;color:var(--ink-soft);text-align:center}
 
   .card{background:var(--surface);border:1px solid var(--line);border-radius:22px;
     box-shadow:var(--shadow);padding:22px;margin-top:18px}
@@ -176,9 +178,44 @@
   .font-btn.fn{font-size:13px} .font-btn.fx{font-size:16px}
   .font-btn.active{border-color:var(--green);color:var(--green);background:var(--green-soft)}
   body.font-xl{font-size:22px}
-  body.font-xl .btn{font-size:23px;min-height:70px}
-  body.font-xl .care p, body.font-xl .where p, body.font-xl .problem p{font-size:17px}
+  body.font-xl .topbar h1{font-size:29px}
+  body.font-xl .topbar p{font-size:16px}
+  body.font-xl .hero h2{font-size:30px}
+  body.font-xl .hero p{font-size:20px}
+  body.font-xl .btn{font-size:23px;min-height:72px}
+  body.font-xl .btn-ghost{font-size:21px}
+  body.font-xl .hint{font-size:17px}
+  body.font-xl .step{font-size:19px}
+  body.font-xl .loading h3{font-size:25px}
+  body.font-xl .loading p{font-size:19px}
+  body.font-xl .res-name{font-size:29px}
+  body.font-xl .res-sci{font-size:19px}
+  body.font-xl .res-fam{font-size:17px}
+  body.font-xl .health-txt h3{font-size:26px}
+  body.font-xl .health-txt p{font-size:18px}
+  body.font-xl .sec-title{font-size:24px}
+  body.font-xl .problem b{font-size:20px}
+  body.font-xl .problem p{font-size:18px}
+  body.font-xl .where p{font-size:19px}
+  body.font-xl .where b{font-size:16px}
+  body.font-xl .care h4{font-size:18px}
+  body.font-xl .care p{font-size:17px}
+  body.font-xl .treat p{font-size:19px}
+  body.font-xl .vovo-card p{font-size:20px}
+  body.font-xl .tip{font-size:19px}
+  body.font-xl .bubble{font-size:19px}
   body.font-xl .chat-row input{font-size:18px}
+  body.font-xl .hi-name{font-size:19px}
+  body.font-xl .hi-meta{font-size:16px}
+  body.font-xl .badge{font-size:16px}
+  body.font-xl .diff{font-size:16px}
+  body.font-xl .tox{font-size:16px}
+  body.font-xl .info-row p{font-size:18px}
+  body.font-xl .photo-tip b{font-size:18px}
+  body.font-xl .photo-tip p{font-size:17px}
+  body.font-xl .name-input,.font-xl .search-input{font-size:21px}
+  body.font-xl .cam-card p{font-size:19px}
+  body.font-xl .chip{font-size:17px}
 
   /* ---- SEÇÕES RECOLHÍVEIS ---- */
   .coll-hdr{display:flex;justify-content:space-between;align-items:center;
@@ -269,14 +306,16 @@
 <div class="wrap" role="main">
 
   <div class="topbar">
-    <div class="logo"><img src="logo.png" alt="Plantinha da Vovó"></div>
-    <div style="flex:1">
+    <div class="topbar-row">
+      <div class="logo"><img src="logo.png" alt="Plantinha da Vovó"></div>
+      <div class="font-ctrl" aria-label="Tamanho do texto">
+        <button class="font-btn fn" id="fontNormal" type="button" aria-label="Texto normal">A</button>
+        <button class="font-btn fx" id="fontLarge" type="button" aria-label="Texto maior">A+</button>
+      </div>
+    </div>
+    <div>
       <h1>Plantinha da Vovó</h1>
       <p>A sabedoria da vovó com olhar de especialista 🌿</p>
-    </div>
-    <div class="font-ctrl" aria-label="Tamanho do texto">
-      <button class="font-btn fn" id="fontNormal" type="button" aria-label="Texto normal">A</button>
-      <button class="font-btn fx" id="fontLarge" type="button" aria-label="Texto maior">A+</button>
     </div>
   </div>
 
@@ -905,14 +944,16 @@ el('fontLarge') && el('fontLarge').addEventListener('click',()=>applyFont('xl'))
 applyFont(localStorage.getItem('pv_font')||'normal');
 
 /* ---------- CÂMERA — verificação de permissão ---------- */
-async function checkAndOpenCamera(){
-  if(navigator.permissions){
-    try{
-      const perm=await navigator.permissions.query({name:'camera'});
-      if(perm.state==='denied'){ showCameraHelp(); return; }
-    }catch(_){ /* API não suportada neste navegador, abre normalmente */ }
-  }
+function checkAndOpenCamera(){
+  // .click() deve ser chamado sincronamente a partir do gesto do usuário
+  // (iOS Safari e outros bloqueiam se houver await antes)
   el('fileCam').click();
+  // verifica permissão em segundo plano — mostra ajuda se estiver negada
+  if(navigator.permissions){
+    navigator.permissions.query({name:'camera'})
+      .then(p=>{ if(p.state==='denied') showCameraHelp(); })
+      .catch(()=>{});
+  }
 }
 function showCameraHelp(){
   const isIOS=/iPad|iPhone|iPod/.test(navigator.userAgent)&&!window.MSStream;
