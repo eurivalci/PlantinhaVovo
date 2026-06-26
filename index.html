@@ -168,6 +168,28 @@
   @media (min-width:680px){ .wrap{padding-top:30px} .leaf-ill{font-size:76px} }
   @media (prefers-reduced-motion:reduce){ .spinner span{animation:none} .btn:active{transform:none} }
 
+  /* ---- TAMANHO DE FONTE ---- */
+  .font-ctrl{display:flex;flex-direction:column;gap:5px;flex:none}
+  .font-btn{border:2px solid var(--line);border-radius:10px;background:#fff;color:var(--ink-soft);
+    cursor:pointer;font-family:'Nunito',sans-serif;font-weight:800;padding:4px 8px;
+    line-height:1;min-width:38px;text-align:center;transition:all .15s ease}
+  .font-btn.fn{font-size:13px} .font-btn.fx{font-size:16px}
+  .font-btn.active{border-color:var(--green);color:var(--green);background:var(--green-soft)}
+  body.font-xl{font-size:22px}
+  body.font-xl .btn{font-size:23px;min-height:70px}
+  body.font-xl .care p, body.font-xl .where p, body.font-xl .problem p{font-size:17px}
+  body.font-xl .chat-row input{font-size:18px}
+
+  /* ---- SEÇÕES RECOLHÍVEIS ---- */
+  .coll-hdr{display:flex;justify-content:space-between;align-items:center;
+    cursor:pointer;user-select:none;-webkit-user-select:none;margin-bottom:14px}
+  .coll-hdr .sec-title{margin:0;flex:1;pointer-events:none}
+  .coll-arrow{font-size:13px;color:var(--green);transition:transform .28s ease;flex:none;
+    width:32px;height:32px;display:grid;place-items:center;border-radius:50%;
+    background:var(--green-soft);margin-left:10px}
+  .coll-hdr[aria-expanded="false"] .coll-arrow{transform:rotate(180deg)}
+  .coll-body{overflow:hidden;transition:max-height .35s ease, opacity .25s ease;opacity:1}
+
   /* ---- DICAS DE FOTO ---- */
   .photo-tips{display:flex;flex-direction:column;gap:10px}
   .photo-tip{display:flex;gap:12px;align-items:flex-start;padding:12px 14px;border-radius:14px}
@@ -244,13 +266,17 @@
 </style>
 </head>
 <body>
-<div class="wrap">
+<div class="wrap" role="main">
 
   <div class="topbar">
     <div class="logo"><img src="logo.png" alt="Plantinha da Vovó"></div>
-    <div>
+    <div style="flex:1">
       <h1>Plantinha da Vovó</h1>
       <p>A sabedoria da vovó com olhar de especialista 🌿</p>
+    </div>
+    <div class="font-ctrl" aria-label="Tamanho do texto">
+      <button class="font-btn fn" id="fontNormal" type="button" aria-label="Texto normal">A</button>
+      <button class="font-btn fx" id="fontLarge" type="button" aria-label="Texto maior">A+</button>
     </div>
   </div>
 
@@ -317,8 +343,8 @@
   <section id="loading" class="hidden">
     <div class="card">
       <img id="loadImg" class="preview-img" alt="Foto da sua planta" style="margin-bottom:18px">
-      <div class="loading">
-        <div class="spinner"><span></span></div>
+      <div class="loading" aria-live="polite" aria-atomic="true">
+        <div class="spinner" aria-hidden="true"><span></span></div>
         <h3>A vovó está olhando sua plantinha…</h3>
         <p id="loadMsg">Olhando as folhinhas com carinho</p>
       </div>
@@ -344,7 +370,7 @@
   <!-- ERRO -->
   <section id="error" class="hidden">
     <div class="card">
-      <div class="errbox" id="errMsg"></div>
+      <div class="errbox" id="errMsg" role="alert" aria-live="assertive"></div>
       <button class="btn btn-primary" id="btnRetry" type="button" style="margin-top:16px"><span class="ico">🔄</span> Tentar de novo</button>
     </div>
   </section>
@@ -618,6 +644,7 @@ function renderResult(d, imgSrc){
   html+='</svg><div class="num"><b>'+sc+'</b><small>de 100</small></div></div>';
   html+='<div class="health-txt"><h3 style="color:'+col.c+'">'+esc(d.saude_status||'Saúde')+'</h3>';
   html+='<p>'+esc(d.diagnostico||'')+'</p></div></div></div>';
+  html+='<div style="text-align:right;margin:2px 4px 0"><button class="chip" id="btnToggleAll" type="button" aria-label="Recolher ou expandir todas as seções">Recolher tudo ▲</button></div>';
 
   if(Array.isArray(d.problemas) && d.problemas.length){
     html+='<div class="card"><h3 class="sec-title"><span class="e">🩺</span> O que a vovó percebeu</h3>';
@@ -688,6 +715,7 @@ function renderResult(d, imgSrc){
   html+='<p class="disclaimer">As orientações são uma ajuda carinhosa para o dia a dia. Em casos sérios, procure um agrônomo ou floricultura de confiança. 🌷</p>';
 
   result.innerHTML=html;
+  setupCollapsibles(result);
 
   // liga os botões do resultado
   el('btnShare').addEventListener('click', ()=> shareResult(d, loadImg.src));
@@ -811,6 +839,70 @@ async function openHistory(){
   renderItems();
   if(searchInput){ searchInput.value=''; searchInput.addEventListener('input',()=>renderItems(searchInput.value)); }
 }
+
+/* ---------- SEÇÕES RECOLHÍVEIS ---------- */
+function setupCollapsibles(container){
+  container.querySelectorAll('.card').forEach(card=>{
+    const title=card.querySelector(':scope > .sec-title');
+    if(!title) return;
+    // monta header
+    const hdr=document.createElement('div');
+    hdr.className='coll-hdr'; hdr.setAttribute('role','button');
+    hdr.setAttribute('tabindex','0'); hdr.setAttribute('aria-expanded','true');
+    card.insertBefore(hdr,title); hdr.appendChild(title);
+    const arrow=document.createElement('span');
+    arrow.className='coll-arrow'; arrow.setAttribute('aria-hidden','true');
+    arrow.textContent='▲'; hdr.appendChild(arrow);
+    // envolve conteúdo restante
+    const body=document.createElement('div'); body.className='coll-body';
+    while(card.children.length>1) body.appendChild(card.children[1]);
+    card.appendChild(body);
+    body.style.maxHeight=body.scrollHeight+'px';
+    // toggle
+    function toggle(){
+      const open=hdr.getAttribute('aria-expanded')==='true';
+      hdr.setAttribute('aria-expanded',open?'false':'true');
+      if(open){
+        body.style.maxHeight=body.scrollHeight+'px';
+        requestAnimationFrame(()=>requestAnimationFrame(()=>{
+          body.style.maxHeight='0'; body.style.opacity='0';
+        }));
+      } else {
+        body.style.maxHeight=body.scrollHeight+'px'; body.style.opacity='1';
+        body.addEventListener('transitionend',()=>{
+          if(hdr.getAttribute('aria-expanded')==='true') body.style.maxHeight='none';
+        },{once:true});
+      }
+    }
+    hdr.addEventListener('click',toggle);
+    hdr.addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key===' '){e.preventDefault();toggle();} });
+  });
+  // botão "Recolher tudo"
+  const btn=container.querySelector('#btnToggleAll'); if(!btn) return;
+  let collapsed=false;
+  btn.addEventListener('click',()=>{
+    const hdrs=container.querySelectorAll('.coll-hdr');
+    collapsed=!collapsed;
+    hdrs.forEach(h=>{
+      const open=h.getAttribute('aria-expanded')==='true';
+      if(collapsed&&open) h.click();
+      if(!collapsed&&!open) h.click();
+    });
+    btn.textContent=collapsed?'Expandir tudo ▼':'Recolher tudo ▲';
+  });
+}
+
+/* ---------- TAMANHO DE FONTE ---------- */
+function applyFont(size){
+  document.body.classList.toggle('font-xl',size==='xl');
+  const n=el('fontNormal'), l=el('fontLarge');
+  if(n) n.classList.toggle('active',size!=='xl');
+  if(l) l.classList.toggle('active',size==='xl');
+  localStorage.setItem('pv_font',size);
+}
+el('fontNormal') && el('fontNormal').addEventListener('click',()=>applyFont('normal'));
+el('fontLarge') && el('fontLarge').addEventListener('click',()=>applyFont('xl'));
+applyFont(localStorage.getItem('pv_font')||'normal');
 
 /* ---------- CÂMERA — verificação de permissão ---------- */
 async function checkAndOpenCamera(){
