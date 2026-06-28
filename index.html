@@ -4,6 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#2F6B3C">
+<link rel="manifest" href="/manifest.json">
+<link rel="apple-touch-icon" href="/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Plantinha">
+<meta name="mobile-web-app-capable" content="yes">
 <title>Plantinha da Vovó — identifica e cuida das suas plantas</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -414,6 +420,62 @@
   .fase-big{font-size:84px;display:block;margin-bottom:10px;
     animation:gpBounce 1.6s ease-in-out infinite}
   .nav-btn{font-size:10px}
+
+  /* ---------- PWA install banner ---------- */
+  .pwa-banner{display:flex;align-items:center;gap:12px;background:var(--green-soft);
+    border:1.5px solid var(--green);border-radius:16px;padding:14px 16px;margin-top:14px}
+  .btn-pwa-yes{background:var(--green);color:#fff;border:none;border-radius:12px;
+    padding:10px 16px;font-weight:800;font-size:15px;cursor:pointer;flex:none;min-height:44px}
+  .btn-pwa-no{background:none;border:none;font-size:22px;cursor:pointer;
+    color:var(--ink-soft);flex:none;padding:4px 8px;line-height:1}
+
+  /* ---------- Remind banner (home) ---------- */
+  .remind-banner{display:flex;align-items:center;gap:10px;background:var(--amber-soft);
+    border:1.5px solid var(--amber);border-radius:14px;padding:12px 14px;margin-top:14px}
+  .remind-text{flex:1;font-size:16px;font-weight:700;color:var(--ink)}
+  .remind-close{background:none;border:none;font-size:20px;color:var(--ink-soft);
+    cursor:pointer;padding:4px;line-height:1}
+
+  /* ---------- Reminder modal (bottom sheet) ---------- */
+  .rem-modal{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:400;
+    display:flex;align-items:flex-end;justify-content:center;padding:0;
+    opacity:0;pointer-events:none;transition:opacity .3s ease}
+  .rem-modal.show{opacity:1;pointer-events:auto}
+  .rem-card{background:var(--surface);border-radius:26px 26px 0 0;
+    padding:28px 22px max(36px,env(safe-area-inset-bottom));
+    width:100%;max-width:600px;text-align:center}
+  .rem-card h3{font-family:'Fraunces',serif;color:var(--green-deep);
+    margin:10px 0 6px;font-size:22px}
+  .rem-opts{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:16px 0 4px}
+  .rem-btn{background:var(--green-soft);border:2px solid var(--line);
+    color:var(--green-deep);border-radius:14px;padding:14px 8px;
+    font-size:16px;font-weight:800;cursor:pointer;transition:background .15s,border-color .15s}
+  .rem-btn:active,.rem-btn.sel{background:var(--green);color:#fff;border-color:var(--green)}
+
+  /* ---------- Grid view (Meu Jardim) ---------- */
+  .hist-hdr{display:flex;align-items:center;margin-bottom:14px}
+  .hist-hdr .sec-title{flex:1;margin:0!important}
+  .vt-wrap{display:flex;gap:6px;flex:none}
+  .vt-btn{background:var(--surface-alt);border:1.5px solid var(--line);border-radius:10px;
+    width:36px;height:36px;font-size:19px;cursor:pointer;display:flex;
+    align-items:center;justify-content:center;line-height:1}
+  .vt-btn.active{background:var(--green-soft);border-color:var(--green)}
+
+  .hist-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .hgi{background:var(--surface-alt);border:1px solid var(--line);
+    border-radius:16px;overflow:hidden;cursor:pointer;position:relative}
+  .hgi-img{width:100%;aspect-ratio:1/1;object-fit:cover;display:block}
+  .hgi-ph{width:100%;aspect-ratio:1/1;background:var(--green-soft);
+    display:grid;place-items:center;font-size:44px}
+  .hgi-info{padding:9px 10px 11px}
+  .hgi-name{font-weight:800;font-size:14px;margin:0 0 3px;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--green-deep)}
+  .hgi-stat{font-size:12px;font-weight:700;margin:0}
+  .hgi-acts{position:absolute;top:6px;right:6px;display:flex;gap:4px}
+  .hgi-act{background:rgba(255,255,255,.82);border:none;border-radius:50%;
+    width:30px;height:30px;font-size:15px;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+  body.dark-mode .hgi-act{background:rgba(33,39,31,.82)}
 </style>
 </head>
 <body>
@@ -463,6 +525,23 @@
       <input type="file" id="fileGal" accept="image/*">
 
       <p class="hint">Dica da vovó: chegue perto e deixe a folha bem iluminada. 🌞</p>
+
+      <!-- banner lembrete de rega (aparece quando há plantas com rega pendente) -->
+      <div id="remindBanner" class="remind-banner hidden">
+        <div class="remind-text" id="remindText">💧 Hora de regar!</div>
+        <button id="btnRemindDismiss" class="remind-close" aria-label="Fechar">✕</button>
+      </div>
+
+      <!-- banner PWA instalar (aparece somente em Android/Chrome com suporte) -->
+      <div id="pwaBanner" class="pwa-banner hidden">
+        <span style="font-size:28px;flex:none">📱</span>
+        <div style="flex:1">
+          <b>Instale no celular!</b>
+          <p style="margin:3px 0 0;font-size:14px;color:var(--ink-soft);line-height:1.3">Funciona sem internet e recebe lembretes de rega</p>
+        </div>
+        <button id="btnPwaInstall" class="btn-pwa-yes" type="button">Instalar</button>
+        <button id="btnPwaDismiss" class="btn-pwa-no" type="button" aria-label="Fechar">✕</button>
+      </div>
     </div>
 
     <div class="card">
@@ -525,7 +604,13 @@
   <!-- HISTÓRICO -->
   <section id="history" class="hidden">
     <div class="card">
-      <h3 class="sec-title"><span class="e">🌱</span> Meu Jardim</h3>
+      <div class="hist-hdr">
+        <h3 class="sec-title"><span class="e">🌱</span> Meu Jardim</h3>
+        <div class="vt-wrap">
+          <button class="vt-btn active" id="vtList" type="button" title="Lista" aria-label="Ver em lista">☰</button>
+          <button class="vt-btn" id="vtGrid" type="button" title="Grade" aria-label="Ver em grade">⊞</button>
+        </div>
+      </div>
       <div class="search-wrap">
         <span class="search-ico">🔍</span>
         <input id="histSearch" class="search-input" type="search" placeholder="Buscar planta…" autocomplete="off">
@@ -629,6 +714,23 @@
 
 <!-- TOAST DO JOGO -->
 <div id="gameToast" class="game-toast"></div>
+
+<!-- MODAL LEMBRETE DE REGA -->
+<div id="remModal" class="rem-modal" role="dialog" aria-modal="true" aria-label="Lembrete de rega">
+  <div class="rem-card">
+    <span style="font-size:44px">💧</span>
+    <h3>Lembrete de rega</h3>
+    <p id="remPlantName" style="font-weight:800;color:var(--green);margin:0 0 6px;font-size:18px"></p>
+    <p style="color:var(--ink-soft);font-size:16px;margin:0 0 4px;line-height:1.4">Com que frequência quer ser lembrada de regar?</p>
+    <div class="rem-opts">
+      <button class="rem-btn" data-days="1" type="button">Todo dia</button>
+      <button class="rem-btn" data-days="2" type="button">A cada 2 dias</button>
+      <button class="rem-btn" data-days="3" type="button">A cada 3 dias</button>
+      <button class="rem-btn" data-days="7" type="button">1× por semana</button>
+    </div>
+    <button class="btn btn-ghost" id="btnRemClose" type="button" style="margin-top:8px;min-height:46px;font-size:17px">Não, obrigada</button>
+  </div>
+</div>
 
 <!-- OVERLAY NOVA FASE -->
 <div id="faseOverlay" class="fase-overlay">
@@ -881,6 +983,9 @@ function analyze(dataUrl){
     if(obj.e_planta===false){ showError('Hmm, não encontrei uma planta nessa foto. 🌱 Tente chegar mais perto das folhas, com boa luz.'); return; }
     Store.save({ nome_popular:obj.nome_popular, saude_status:obj.saude_status, saude_score:obj.saude_score, thumb:lastThumb, data:obj });
     renderResult(obj, loadImg.src);
+    if(obj.nome_popular && obj.cuidados && obj.cuidados.rega){
+      setTimeout(()=>offerReminder(obj.nome_popular, obj.cuidados.rega), 1800);
+    }
   })
   .catch(err=>{
     clearTimeout(t); if(loadTimer){ clearInterval(loadTimer); loadTimer=null; }
@@ -1079,9 +1184,21 @@ async function openHistory(){
   list.innerHTML='<p class="empty">Carregando…</p>';
   let allItems=await Store.list();
   let currentFilter='all';
+  let currentView=pvGet('pv_view')||'list';
 
   // reset chips ao abrir
   document.querySelectorAll('#histFilters .filter-chip').forEach(b=>b.classList.toggle('active',b.dataset.filter==='all'));
+
+  // toggle lista/grade
+  const vtList=el('vtList'), vtGrid=el('vtGrid');
+  function setView(v){
+    currentView=v; pvSet('pv_view',v);
+    if(vtList) vtList.classList.toggle('active',v==='list');
+    if(vtGrid) vtGrid.classList.toggle('active',v==='grid');
+    renderItems();
+  }
+  if(vtList){ vtList.classList.toggle('active',currentView==='list'); vtList.onclick=()=>setView('list'); }
+  if(vtGrid){ vtGrid.classList.toggle('active',currentView==='grid'); vtGrid.onclick=()=>setView('grid'); }
 
   function renderItems(){
     const q=(searchInput?searchInput.value:'').toLowerCase().trim();
@@ -1091,13 +1208,14 @@ async function openHistory(){
     else if(currentFilter==='aten') filtered=filtered.filter(it=>(it.saude_status||'').toLowerCase().includes('aten'));
     else if(currentFilter==='prec') filtered=filtered.filter(it=>(it.saude_status||'').toLowerCase().includes('prec'));
     if(q) filtered=filtered.filter(it=>(it.nome_popular||'').toLowerCase().includes(q)||(it.saude_status||'').toLowerCase().includes(q));
-    // favoritas sempre primeiro
     filtered=[...filtered].sort((a,b)=>(Favs.has(b)?1:0)-(Favs.has(a)?1:0));
 
     if(!filtered.length){
+      list.className='';
       list.innerHTML='<p class="empty">'+(q||currentFilter!=='all'?'Nenhuma planta encontrada.':'Você ainda não analisou nenhuma planta.')+'  🌱</p>';
       return;
     }
+    list.className=currentView==='grid'?'hist-grid':'';
     let html='';
     filtered.forEach(it=>{
       const globalIdx=allItems.indexOf(it);
@@ -1110,47 +1228,58 @@ async function openHistory(){
       }
       const thumb=it.thumb||'';
       const score=parseInt(it.saude_score,10)||0;
-      html+='<div class="hist-item" data-idx="'+globalIdx+'">';
-      html+=thumb?'<img src="'+thumb+'" alt="">':'<div style="width:58px;height:58px;background:var(--green-soft);border-radius:12px;display:grid;place-items:center;font-size:26px;flex:none">🪴</div>';
-      html+='<div class="hi-info">';
-      html+='<div class="hi-top">';
-      html+='<p class="hi-name">'+esc(it.nome_popular||'Planta')+'</p>';
-      html+='<div class="hi-actions">';
-      html+='<button class="fav-btn" data-idx="'+globalIdx+'" aria-label="'+(fav?'Desfavoritar':'Favoritar')+'">'+(fav?'⭐':'☆')+'</button>';
-      html+='<button class="del-btn" data-idx="'+globalIdx+'" aria-label="Excluir">🗑️</button>';
-      html+='</div></div>';
-      html+='<p class="hi-meta"><span style="color:'+col.c+';font-weight:700">'+esc(it.saude_status||'')+'</span>'+(score?' · '+score+'/100':'')+(when?' · '+when:'')+'</p>';
-      html+='</div>';
-      html+='</div>';
+      if(currentView==='grid'){
+        html+='<div class="hgi" data-idx="'+globalIdx+'">';
+        html+=thumb?'<img class="hgi-img" src="'+thumb+'" alt="">':'<div class="hgi-ph">🪴</div>';
+        html+='<div class="hgi-acts">';
+        html+='<button class="hgi-act fav-btn" data-idx="'+globalIdx+'" aria-label="'+(fav?'Desfavoritar':'Favoritar')+'">'+(fav?'⭐':'☆')+'</button>';
+        html+='<button class="hgi-act del-btn" data-idx="'+globalIdx+'" aria-label="Excluir">🗑</button>';
+        html+='</div>';
+        html+='<div class="hgi-info">';
+        html+='<p class="hgi-name">'+esc(it.nome_popular||'Planta')+'</p>';
+        html+='<p class="hgi-stat" style="color:'+col.c+'">'+esc(it.saude_status||'')+'</p>';
+        html+='</div></div>';
+      } else {
+        html+='<div class="hist-item" data-idx="'+globalIdx+'">';
+        html+=thumb?'<img src="'+thumb+'" alt="">':'<div style="width:58px;height:58px;background:var(--green-soft);border-radius:12px;display:grid;place-items:center;font-size:26px;flex:none">🪴</div>';
+        html+='<div class="hi-info">';
+        html+='<div class="hi-top">';
+        html+='<p class="hi-name">'+esc(it.nome_popular||'Planta')+'</p>';
+        html+='<div class="hi-actions">';
+        html+='<button class="fav-btn" data-idx="'+globalIdx+'" aria-label="'+(fav?'Desfavoritar':'Favoritar')+'">'+(fav?'⭐':'☆')+'</button>';
+        html+='<button class="del-btn" data-idx="'+globalIdx+'" aria-label="Excluir">🗑️</button>';
+        html+='</div></div>';
+        html+='<p class="hi-meta"><span style="color:'+col.c+';font-weight:700">'+esc(it.saude_status||'')+'</span>'+(score?' · '+score+'/100':'')+(when?' · '+when:'')+'</p>';
+        html+='</div>';
+        html+='</div>';
+      }
     });
     list.innerHTML=html;
 
-    list.querySelectorAll('.hist-item').forEach(node=>{
-      node.addEventListener('click',e=>{
-        if(e.target.closest('.del-btn')||e.target.closest('.fav-btn')) return;
-        const it=allItems[parseInt(node.dataset.idx,10)];
+    // event delegation: funciona para lista e grade
+    list.onclick=e=>{
+      const delBtn=e.target.closest('.del-btn');
+      const favBtn=e.target.closest('.fav-btn');
+      const item=e.target.closest('.hist-item,.hgi');
+      if(delBtn){
+        e.stopPropagation();
+        const idx=parseInt(delBtn.dataset.idx,10);
+        Store.delete(allItems[idx]).then(()=>{ allItems.splice(idx,1); renderItems(); });
+        return;
+      }
+      if(favBtn){
+        e.stopPropagation();
+        Favs.toggle(allItems[parseInt(favBtn.dataset.idx,10)]);
+        renderItems();
+        return;
+      }
+      if(item){
+        const it=allItems[parseInt(item.dataset.idx,10)];
         if(it&&it.data){ lastThumb=it.thumb||''; renderResult(it.data,it.thumb||''); }
-      });
-    });
-    list.querySelectorAll('.fav-btn').forEach(btn=>{
-      btn.addEventListener('click',e=>{
-        e.stopPropagation();
-        Favs.toggle(allItems[parseInt(btn.dataset.idx,10)]);
-        renderItems();
-      });
-    });
-    list.querySelectorAll('.del-btn').forEach(btn=>{
-      btn.addEventListener('click',async e=>{
-        e.stopPropagation();
-        const idx=parseInt(btn.dataset.idx,10);
-        await Store.delete(allItems[idx]);
-        allItems.splice(idx,1);
-        renderItems();
-      });
-    });
+      }
+    };
   }
 
-  // delegação de evento nos filtros (substitui handler anterior)
   const filtersEl=el('histFilters');
   if(filtersEl) filtersEl.onclick=e=>{
     const chip=e.target.closest('.filter-chip');
@@ -1333,6 +1462,108 @@ function startApp(){
 el('btnStart')&&el('btnStart').addEventListener('click',startApp);
 el('btnSkip')&&el('btnSkip').addEventListener('click',startApp);
 el('nameInput')&&el('nameInput').addEventListener('keydown',(e)=>{ if(e.key==='Enter'){e.preventDefault();startApp();} });
+
+/* ---------- SERVICE WORKER + PWA ---------- */
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('/sw.js').catch(()=>{});
+}
+let _deferredInstall=null;
+window.addEventListener('beforeinstallprompt',e=>{
+  e.preventDefault(); _deferredInstall=e;
+  if(!pvGet('pv_pwa_dismissed')){
+    const b=el('pwaBanner'); if(b) b.classList.remove('hidden');
+  }
+});
+el('btnPwaInstall')&&el('btnPwaInstall').addEventListener('click',async()=>{
+  if(!_deferredInstall) return;
+  _deferredInstall.prompt();
+  _deferredInstall=null;
+  const b=el('pwaBanner'); if(b) b.classList.add('hidden');
+});
+el('btnPwaDismiss')&&el('btnPwaDismiss').addEventListener('click',()=>{
+  pvSet('pv_pwa_dismissed','1');
+  const b=el('pwaBanner'); if(b) b.classList.add('hidden');
+});
+// iOS: detecta se não está em standalone e nunca viu instrução
+(function(){
+  const ios=/iphone|ipad|ipod/i.test(navigator.userAgent);
+  const standalone=('standalone' in navigator&&navigator.standalone)||
+    window.matchMedia('(display-mode: standalone)').matches;
+  if(ios&&!standalone&&!pvGet('pv_pwa_dismissed')){
+    const b=el('pwaBanner'); if(!b) return;
+    b.querySelector('p').textContent='Toque em Compartilhar ➜ "Adicionar à Tela de Início" para instalar';
+    b.classList.remove('hidden');
+    // iOS não tem install prompt → só mostrar instrução; botão "Instalar" some
+    const btnI=el('btnPwaInstall'); if(btnI) btnI.style.display='none';
+  }
+})();
+
+/* ---------- LEMBRETES DE REGA ---------- */
+function loadReminders(){ try{ const r=pvGet('pv_lembretes'); return r?JSON.parse(r):[]; }catch(_){ return []; } }
+function saveReminders(a){ pvSet('pv_lembretes',JSON.stringify(a)); }
+function parseRegaInterval(txt){
+  if(!txt) return 3;
+  const t=txt.toLowerCase();
+  if(/todo\s*dia|diari|cada\s*1\s*dia/.test(t)) return 1;
+  const m=t.match(/(?:cada|a\s*cada)\s*(\d+)\s*dia/);
+  if(m) return Math.min(14,Math.max(1,parseInt(m[1])));
+  if(/semana|7\s*dia/.test(t)) return 7;
+  if(/quinzen|15\s*dia/.test(t)) return 14;
+  return 3;
+}
+async function askNotifPermission(){
+  if(!('Notification' in window)) return false;
+  if(Notification.permission==='granted') return true;
+  if(Notification.permission==='denied') return false;
+  const p=await Notification.requestPermission();
+  return p==='granted';
+}
+function offerReminder(plantName,regaText){
+  const sug=parseRegaInterval(regaText);
+  const p=el('remPlantName'); if(p) p.textContent=plantName||'sua planta';
+  document.querySelectorAll('.rem-btn').forEach(b=>{
+    b.classList.toggle('sel',parseInt(b.dataset.days)===sug);
+  });
+  const m=el('remModal'); if(m){ m._plant=plantName; m.classList.add('show'); }
+}
+function setReminder(days){
+  const m=el('remModal'); if(!m) return;
+  const nome=m._plant||'Plantinha';
+  const all=loadReminders().filter(r=>r.nome!==nome);
+  all.push({nome, interval_days:days, lastReminded:Date.now()-(days-1)*86400000*0.8});
+  saveReminders(all);
+  m.classList.remove('show');
+  askNotifPermission().then(ok=>{
+    const d=days===1?'todo dia':'a cada '+days+(days===7?' dias (1 semana)':' dias');
+    showGameToast(ok?'💧 Vou te lembrar de regar '+d+'!':'💧 Lembrete salvo! Abra o app para ver.');
+  });
+}
+document.querySelectorAll('.rem-btn').forEach(b=>{
+  b.addEventListener('click',()=>setReminder(parseInt(b.dataset.days)));
+});
+el('btnRemClose')&&el('btnRemClose').addEventListener('click',()=>{
+  const m=el('remModal'); if(m) m.classList.remove('show');
+});
+
+function checkReminders(){
+  const all=loadReminders();
+  const due=all.filter(r=>Date.now()>=r.lastReminded+r.interval_days*86400000);
+  if(!due.length) return;
+  const names=due.map(r=>r.nome).join(', ');
+  const ban=el('remindBanner'), txt=el('remindText');
+  if(ban&&txt){ txt.textContent='💧 Hora de regar: '+names+'!'; ban.classList.remove('hidden'); }
+  const updated=all.map(r=>due.find(d=>d.nome===r.nome)?{...r,lastReminded:Date.now()}:r);
+  saveReminders(updated);
+  if('Notification' in window && Notification.permission==='granted'){
+    new Notification('Plantinha da Vovó 🌱',{
+      body:'Hora de regar: '+names+'! 💧',
+      icon:'/icon-192.png', tag:'pv-rega', renotify:true
+    });
+  }
+}
+el('btnRemindDismiss')&&el('btnRemindDismiss').addEventListener('click',()=>{
+  const b=el('remindBanner'); if(b) b.classList.add('hidden');
+});
 
 /* ---------- JOGO ---------- */
 const FASES=[
@@ -1548,6 +1779,7 @@ el('navGame')&&el('navGame').addEventListener('click',openGame);
   if(nomeSalvo !== null){
     updateGreeting(nomeSalvo);
     show(home);
+    setTimeout(checkReminders, 800); // checa lembretes após a tela carregar
   } else {
     show(welcome);
   }
