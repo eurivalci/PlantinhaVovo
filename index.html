@@ -772,6 +772,31 @@ const Favs={
 };
 
 /* ============================ APP ============================ */
+/* ---- helpers de persistência dupla (localStorage + cookie) ----
+   Cookies sobrevivem em browsers internos (WhatsApp/iMessage) onde o
+   localStorage é zerado quando o app vai para o background ou é fechado.     */
+function setCk(name,val,days){
+  const d=new Date(); d.setTime(d.getTime()+days*864e5);
+  document.cookie=name+'='+encodeURIComponent(val)+';expires='+d.toUTCString()+';path=/;SameSite=Lax';
+}
+function getCk(name){
+  const m=document.cookie.match('(^|;)\\s*'+name+'=([^;]*)');
+  return m?decodeURIComponent(m[2]):null;
+}
+function pvGet(key){
+  try{
+    const v=localStorage.getItem(key);
+    if(v!==null) return v;
+  }catch(_){}
+  const c=getCk('pv_ck_'+key);
+  if(c!==null){ try{ localStorage.setItem(key,c); }catch(_){} }
+  return c;
+}
+function pvSet(key,val){
+  try{ localStorage.setItem(key,val); }catch(_){}
+  setCk('pv_ck_'+key,val,365);
+}
+
 function el(id){ return document.getElementById(id); }
 const welcome=el('welcome'), home=el('home'), loading=el('loading'), result=el('result'),
       errorEl=el('error'), history=el('history'), gameSection=el('game'),
@@ -1197,11 +1222,11 @@ function applyFont(size){
   const n=el('fontNormal'), l=el('fontLarge');
   if(n) n.classList.toggle('active',size!=='xl');
   if(l) l.classList.toggle('active',size==='xl');
-  localStorage.setItem('pv_font',size);
+  pvSet('pv_font',size);
 }
 el('fontNormal') && el('fontNormal').addEventListener('click',()=>applyFont('normal'));
 el('fontLarge') && el('fontLarge').addEventListener('click',()=>applyFont('xl'));
-applyFont(localStorage.getItem('pv_font')||'normal');
+applyFont(pvGet('pv_font')||'normal');
 
 /* ---------- MODO ESCURO ---------- */
 function applyDark(pref){
@@ -1211,15 +1236,15 @@ function applyDark(pref){
   const btn=el('darkToggle'); if(btn) btn.textContent=dark?'☀️':'🌙';
   const meta=document.querySelector('meta[name="theme-color"]'); if(meta) meta.content=dark?'#161B17':'#2F6B3C';
   document.querySelectorAll('.app-logo').forEach(img=>{ img.src=dark?'logo_escuro.png':'logo.png'; });
-  localStorage.setItem('pv_dark',pref||'auto');
+  pvSet('pv_dark',pref||'auto');
 }
 el('darkToggle')&&el('darkToggle').addEventListener('click',()=>{
   applyDark(document.body.classList.contains('dark-mode')?'light':'dark');
 });
 window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{
-  if((localStorage.getItem('pv_dark')||'auto')==='auto') applyDark('auto');
+  if((pvGet('pv_dark')||'auto')==='auto') applyDark('auto');
 });
-applyDark(localStorage.getItem('pv_dark')||'auto');
+applyDark(pvGet('pv_dark')||'auto');
 
 /* ---------- CÂMERA — verificação de permissão ---------- */
 function checkAndOpenCamera(){
@@ -1301,7 +1326,7 @@ function updateGreeting(nome){
 function startApp(){
   const inp=el('nameInput');
   const nome=(inp?inp.value||'':'').trim();
-  try{ localStorage.setItem('pv_nome', nome); }catch(_){}
+  pvSet('pv_nome', nome);
   updateGreeting(nome);
   show(home);
 }
@@ -1518,7 +1543,7 @@ el('navGame')&&el('navGame').addEventListener('click',openGame);
 
 /* ---------- INIT ---------- */
 (function(){
-  const nomeSalvo=localStorage.getItem('pv_nome');
+  const nomeSalvo=pvGet('pv_nome');
   // nomeSalvo===null → nunca visitou; "" ou nome → já visitou (mesmo sem nome)
   if(nomeSalvo !== null){
     updateGreeting(nomeSalvo);
