@@ -520,6 +520,7 @@
       <button class="btn btn-primary" id="btnCam" type="button"><span class="ico">📷</span> Tirar foto agora</button>
       <button class="btn btn-secondary" id="btnGal" type="button"><span class="ico">🖼️</span> Escolher foto do celular</button>
       <button class="btn btn-ghost" id="btnHist" type="button"><span class="ico">🌱</span> Meu Jardim</button>
+      <button class="btn btn-ghost" id="btnShareApp" type="button" style="margin-top:10px"><span class="ico">📤</span> Indicar para uma amiga</button>
 
       <input type="file" id="fileCam" accept="image/*" capture="environment">
       <input type="file" id="fileGal" accept="image/*">
@@ -1462,6 +1463,16 @@ function startApp(){
 el('btnStart')&&el('btnStart').addEventListener('click',startApp);
 el('btnSkip')&&el('btnSkip').addEventListener('click',startApp);
 el('nameInput')&&el('nameInput').addEventListener('keydown',(e)=>{ if(e.key==='Enter'){e.preventDefault();startApp();} });
+
+el('btnShareApp')&&el('btnShareApp').addEventListener('click',async()=>{
+  const url='https://plantinha-vovo.vercel.app/';
+  const title='Plantinha da Vovó 🌱';
+  const text='Oi! Encontrei um aplicativo lindo que identifica plantas e diz como cuidar delas. É gratuito e muito fácil de usar — experimente! 🌿\n'+url;
+  if(navigator.share){
+    try{ await navigator.share({title,text,url}); return; }catch(_){}
+  }
+  try{ await navigator.clipboard.writeText(text); showShareToast(); }catch(_){}
+});
 
 /* ---------- SERVICE WORKER + PWA ---------- */
 if('serviceWorker' in navigator){
